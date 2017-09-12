@@ -1,0 +1,177 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+\usepackage{caption}
+%\usepackage{pgfplots}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{footnote}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{multirow}
+\usepackage{amsfonts}
+\usepackage[boxed,linesnumbered,noend]{algorithm2e}
+\usepackage{qcircuit}
+\usepackage{enumerate}
+\usepackage{eurosym}
+
+\newtheorem{thm}{Theorem}
+\newtheorem{prop}{Propriety}
+\newtheorem{lemma}{Lemma}
+\newtheorem{defi}{Definition}
+\newtheorem{coro}{Corollary}
+
+
+
+\setlength{\oddsidemargin}{0pt}
+% Marge gauche sur pages impaires
+\setlength{\evensidemargin}{0pt}
+% Marge gauche sur pages paires
+\setlength{\textwidth}{470pt}
+% Largeur de la zone de texte 
+\setlength{\topmargin}{0pt}
+% Pas de marge en haut
+\setlength{\headheight}{13pt}
+% Haut de page
+\setlength{\headsep}{10pt}
+% Entre le haut de page et le texte
+\setlength{\footskip}{40pt}
+% Bas de page + séparation
+\setlength{\textheight}{630pt}
+% Hauteur de la zone de texte
+
+\title{Génie Logiciel pour le Calcul Scientifique}
+\author{Marc Tajchman\\
+\url{marc.tajchman@cea.fr}}
+\date{}
+
+\newcommand{\note}{\medskip\noindent\underline}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\paragraph{Idée :} Façon de développer des application de calcul et surtout de les intégrer dans un framework. Le but est d'obtenir le plus rapidement des résultats sans avoir à tout recoder (affichage, calculs "simples", gestion de fichiers, ...) afin de se concentrer principalement sur l'algorithmique à implémenter.
+
+\section{Introduction}
+
+\subsection{Notion d'API}
+\emph{Application Programming Interface} : Indique les différentes "briques logicielle" (fonctions, classes, modules, etc) utilisables avec leur description. Pour chaque fonctionnalité, l'API documente :
+\begin{itemize}
+\item Le travail effectué (exemple : résolution d'un système linéaire)
+\item La méthode d'appel
+\item La description des entrées (types, formats et valeurs) (exemple : la matrice doit être inversible)
+\item La description des résultats de sortie (types et formats) (exemple : le vecteur de solutions \emph{et} la précision de calcul ; si la sortie est une matrice, l'ordre des coefficients doit être précisé, ...)
+\end{itemize}
+\bigskip
+
+Elle se présente sous la forme d'un ensemble de fichiers à inclure dans le code qui donne la \emph{signature} ou \emph{prototype} des fonctions apportées, ainsi qu'un manuel d'explication complétant les explications (ce n'est cependant malheureusement pas toujours le cas).
+
+Attention, un code peu utiliser plusieurs API, et une API peut être commune à plusieurs code (par exemple, utiliser deux algorithmes différents pour le même calcul).
+
+Parfois, une API \emph{de haut niveau} est disponible, permettant d'utiliser des fonctions "simples" utilisant des paramètres par défaut (utile selon le "niveau d'expertise" de l'utilisateur).
+\bigskip
+
+L'intérêt d'une API réside dans la \emph{réutilisation possible} du code : en effet, il est possible d'interchanger du code partageant la même API sans adaptations.
+\bigskip
+
+Il existe de nos jour de nombreuses API de confiance performantes, probablement plus qu'une implémentation à la main. Par exemple:
+FFTW pour la transformées de Fourier, LAPACK pour l'algèbre linéaire, MPI pour le calcul parallèle, ce dernier étant une interface dont de nombreuses librairies définissent différemment ces interfaces (OpenMPI par exemple). Avec l'achat d'une machine, il est possible que le constructeur offre une version modifiée de MPI adaptée pour cette machine ; mais toutes ces versions peuvent exécuter le même code.
+
+\paragraph{Attention :} Il faut réfléchir \emph{au départ} sur le problème à résoudre et son intégration par rapport aux composantes systèmes, leurs interactions. Il est utile de vérifier sur des exemples triviaux le bon fonctionnement du code petit à petit ; mais également de vérifier que le code ne fonctionne pas lorsque les spécifications d'entrée ne sont pas respectées.
+
+On peut commencer par utiliser "sur papier" un langage de modélisation tel ULM (\textit{Universal Modeling Language}, un langage graphique).
+
+\subsection{Utilisation de Design Pattern}
+\emph{Masque de conception} en français.\\
+Par exemple :
+\begin{itemize}
+\item Factory (construction de données appartenant à une même classe générale)
+\item Sigleton (refuser la création de deux objets de même classe afin de garantir l'unicité)
+\item Iterator (parcours d'un ensemble)
+\item Observer (tirer des informations du code telles que l'affichage/sauvegarde ou des résultats partiels)
+\item Et pleins d'autres !
+\end{itemize}
+
+\subsection{Réutilisation de code}
+\paragraph{Principe :} écrire le moins de code possible soi-même. On utilise principalement deux voies : soit par l'utilisation de bibliothèques (\emph{libraries}) ou l'utilisation d'une plateforme (\emph{framework} ou \emph{cadriciel}). Il est également possible de mélanger ces deux approches.
+
+\paragraph{Librairie}
+Ensemble logiciel réalisant un ensemble de traitement similaires ; elle ne peut pas s'exécuter seule mais est ajoutée au code afin d'utiliser ses fonctionnalités. Le plus souvent, un code utilisera plusieurs librairies. C'est le code qui gère le déroulement du calcul.
+
+Dans un contexte HPC, il faut faire bien attention à ce que celles-ci sont capable de fonctionner en mode parallèle... Grands noms : PETSc, MUMPS, et plus récemment PASTIX et PLASMA
+
+\paragraph{Framework}
+C'est une espace de travail, de composants et de règles. Ces composants sont organisés pour être utilisés en interaction les uns avec les autres. Le développeur ajoute son code au framework et bénéficie un ensemble cohérent de composants de base. Dans ce cas, c'est le framework qui gère le déroulement de calcul. Par exemple Mathlab permet l'importation de code de différents langages sous réserve que ce dernier respecte un format précis.
+\bigskip
+
+Les critères de choix sont principalement :
+\begin{itemize}
+\item Le type de matrice et de système dont on a besoin (creuses denses, etc)
+\item Architectures visées (GPU, accélération matérielle, ...)
+\item Adéquation de la représentation des matrices dans le code par rapport à la librairie
+\end{itemize}
+\bigskip
+
+De nombreuses librairies existent également pour l'écriture efficace de données, telles :
+\begin{itemize}
+\item MPI-I/O
+\item HDF (à utiliser dans le projet)
+\item SIONlib (allemand)
+\item ADIOS
+\item NetCDF
+\end{itemize}
+
+\subsection{Libraires pour la gestion de maillage}
+Cf sildes.
+
+
+Visualisation de résultats :
+\begin{itemize}
+\item VTK
+\end{itemize}
+\bigskip
+
+Paramétrage des codes :
+\begin{itemize}
+\item INI
+\item JSON
+\item XML
+\end{itemize}
+
+
+\subsubsection{Plateforme}
+Un framework apporte :
+\begin{itemize}
+\item Un ensemble de composant d'intérêt général (par exemple des librairies)
+\item Un ensemble de règles (normalisation des données, ensemble minimal de fonctionnalités, etc)
+\item Une interface utilisateur (graphique ou langage de commande) afin d'utiliser les composants
+\end{itemize}
+\bigskip
+
+Il faut donc
+\begin{itemize}
+\item Vérifier que le code propose toutes les fonctionnalités nécessaires
+\item Transforme les données en utilisant le format spécifié
+\item N'a pas de programme principal (main)
+\end{itemize}
+\bigskip
+
+Exemple : 
+\begin{itemize}
+\item ROOT, développé par le CERN, utilisé pour le traitement de grande quantité de données
+\item Trilinos, pour le pré-processing de calcul, utilise le parallélisme, codé en C++
+\item Salome (CEA-EDF), propose des composants de pré- et post-processing (CAO, maillage, visualisation), une UI graphique et textuelle (python) 
+\end{itemize}
+
+
+
+\end{document}
