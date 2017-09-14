@@ -28,7 +28,9 @@
 \newtheorem{defi}{Definition}
 \newtheorem{coro}{Corollary}
 
-
+\SetKwBlock{Label}{label}{end}%
+\SetKwRepeat{Do}{do}{while}%
+\SetKwProg{Void}{void}{}%
 
 \setlength{\oddsidemargin}{0pt}
 % Marge gauche sur pages impaires
@@ -72,7 +74,7 @@ Depuis une dizaine d'année, les appareils informatiques ont complètement chang
 
 De nos jours, pour gagner des performances, il faut augmenter le parallélisme, ce qui est difficile. Nous allons bien entendu travailler dessus, ainsi que sur le placement (caches).
 
-On a un aspect de plus en plus nomade de l'informatique (on masque la localisation : possibilité de continuer un travail sur plusieurs machine), rendu possible par la centralisation des calcul. La technique utilisée est la \emph{virtualisation}, ce qui est également possible pour le HPC. On n'utilise quasiment plus la machine telle qu'elle est. L'idée est d'utiliser une "machine dans une machine", ce qui introduit une \emph{couche de virtualisation} qui modifie les comportement (il s'agit du sujet de recherche de notre professeur).
+On a un aspect de plus en plus nomade de l'informatique (on masque la localisation : possibilité de continuer un travail sur plusieurs machine), rendu possible par la centralisation des calcul. La technique utilisée est la \emph{virtualisation}, ce qui est également possible pour le HPC. On n'utilise quasiment plus la machine telle qu'elle est. L'idée est d'utiliser une "machine dans une machine", ce qui introduit une \emph{couche de virtualisation} qui modifie les comportement\footnote{il s'agit du sujet de recherche de notre professeur}.
 
 \paragraph{Plan}
 \begin{enumerate}[I]
@@ -123,10 +125,10 @@ unlock(mutex)\;
 
 \paragraph{Notation} Un exam final sur 100\% et un devoir surprise à un moment sur 10\%. Une annale sont disponibles sur le site (attention, ne pas se fier à la difficulté car elle dépend de la promo).
 
-\paragraph{Conseil} Garder un œil sur les revues scientifique, même si vous vous destinez à un parcours d'ingénieur (grrrr...).
+\paragraph{Conseil} Garder un œil sur les revues scientifique, même si vous vous destinez à un parcours d'ingénieur (grrrr...\footnote{Humour : L'auteur de ces notes ne se destine pas à ce parcours, ne vous vexez pas}).
 
 
-\section{Multicoeurs}
+\section{Architectures des Machines Multicoeurs}
 Idée : comprendre au niveau matériel et pourquoi certains comportement au niveau logiciel peuvent sembler étranges.
 
 \emph{Auparavant} Loi de Moore : la densité d'intégration des transistors double tout les 18 mois. Cette puissance permettait d'augmenter la fréquence, qui s'est heurtée à la dissipation thermique (la consommation augmente avec le carré de la fréquence). On sait par contre que ça ne sera pas toujours le cas : les interconnexions entre coeurs peuvent également tirer beaucoup d'énergie, bien que ce ne soit pas le facteur limitant de nos jours.
@@ -161,7 +163,7 @@ Le \emph{Network On Chip} est la partie qui connecte les différent coeurs d'un 
 \caption{\label{fig:cache}Hiérarchie des caches}
 \end{figure}
 
-\paragraph{Problème du cache :}
+\subsection{Problème du cache}
 Il assure la cohérence des données, donne un sens à ce que le processeur voit de la mémoire (cf figure \ref{fig:cache}). Comment invalider une ligne de cache en cas de modification ?
 
 On utilise le processus MOESI : un verrou contenant un état par ligne de cache\footnote{c'est ce problème qui est à l'origine du NUMA}, la synchronisation s'effectuant entre cache de même hiérarchie :
@@ -200,9 +202,180 @@ L'accès à la mémoire centrale n'est plus uniforme (local : 200 cycles ; au pi
 
 Il existe également l'\emph{interleaved} qui utilise un \emph{round robin} (allocation aléatoirement de la mémoire), ce qui permet d'équilibrer les accès mais est très mauvais pour la localité (pas de saturation interne).
 
-\subsubsection{Placement de processus sous Linux}
-\texttt{pthread\_setaffinity} pour sélectionner le cœur, \texttt{mbind} pour n'allouer la mémoire physique qu'à partir d'un ensemble de nœuds. \texttt{madvise} permet de libérer les pages physiques pour les migrer.
+\subsection{Placement de processus sous Linux}
+\texttt{pthread\_setaffinity} pour sélectionner le cœur, \texttt{mbind} pour n'allouer la mémoire physique qu'à partir d'un ensemble de nœuds. \texttt{madvise} permet de libérer les pages physiques pour les migrer. Pour plus de détails, voir le manuel linux (\texttt{man fonction}).
 
 
+\section{Algorithmique sans verrou}
+Le principe même du verrou induit des threads inactifs lorsque ce dernier est pris (verouillé). En fait, plus il y a de verrous, moins il y a de parallélisme ! Le verrou force la séquencialisation de la section critique.
+
+Le principe des \emph{structures non bloquantes} est née dans les années 80, puis a connu un nouvel essor en 200 avec la liste chainée sans verrou. 
+\bigskip
+
+\begin{defi}[Loi d'Ambdahl]
+Pour tout programme, si $p$ est la proportion de code exécutable en parallèle, $\dfrac{p}{n}$ la répartition de la charge de travaille sur $n$ cœurs, alors l'accélération maximal théorique est 
+\[a = \dfrac{1}{1 - p + \dfrac{p}{n}} \;\underset{n\to +\infty}{\longrightarrow}\; \dfrac{1}{1-p}\]
+\end{defi}
+
+Cela signifie par exemple que pour une un programme parallélisé à 75\%, l'accélération maximale sera de 4 (3,7 à 32 cœurs). Pour un taux de parallélisation de 95\%, le speedup maximal est de 20, et atteint 100 pour un code à 99\% parallélisé.
+
+\paragraph{Note}
+La formule donne également une idée du nombre de cœurs "utiles". Par exemple, pour un code à 95\% parallèle, le speedup passe de 12,55 à 32 cœurs à 17,42 à 128 cœurs).
+
+\paragraph{Conclusion} Cela vaut le coup de se battre \emph{pour quelques pourcents de parallélisation}, même pour une addition seule !
+
+\paragraph{Exemple}
+\begin{itemize}
+\item Une addition (\texttt{x++}) sur la suite SPARC 2) permet de multiplier les performances par 10 sur 50 cœurs !
+\item Le compteur d'ouverture des fichiers était le goulot d'étranglement de Linux sur le HPC (meilleur papier système 2013)
+\end{itemize}
+
+\paragraph{Comment se passer du code séquentiel ?}
+Retirer la mémoire centrale. C'est cependant impossible, même sur MPI, les \texttt{gather}/\texttt{scatter} cachent une synchronisation dans la répartition des résultats.
+
+
+Dans les grands centres web par exemple, tout est fait avec des processus (communication par TCP/IP au lieu de la mémoire partagée).
+
+\subsection{Solution naturelle}
+Qu'est-ce qu'un algorithm non bloquant ?
+
+\begin{itemize}
+\item[Wait-free :] Toute opération se termine en un nombre fini de pas (i.e. pas de blocage de threads ni de famine). Cela est peu utile en HPC car il contient beaucoup de code séquentiel (et donc non parallélisable) ; mais est très recherché dans le domaine du temps réel.
+\item[Lock-free :] Si des opérations sont appelée infiniment souvent, alors elles se terminent infiniment souvent (ceci est une garantie \emph{asymptotique} donc pas de garantie temporelle, pas de bornes). $\to$ pas d'interblocage du programme, mais certains threads peuvent ne jamais être élus).
+\item[Obstruction-free :] A tout moment, tout thread s'exécutant seul termine son opération en un nombre fini de pas (i.e. pour tout temps $t$ je peux couper tous les threads sauf un et terminer l'exécution de ce threads en un temps fini).
+\end{itemize}
+\bigskip
+
+Noter que
+\[\text{Wait-free} \Rightarrow \text{Lock-free} \Rightarrow \text{Obstruction-free}\]
+Les algorithmes à verrou ne sont pas obstrution-free, car une fois le verrou pris, tous les autres threads sont bloqués.
+\bigskip
+
+Du point de vue des adversaires :
+\begin{itemize}
+\item[Wait-free :] On borne le temps maximal perdu par l'adversaire
+\item[Lock-free :] L'adversaire peut retarder de manière arbitrairement grande mais pas infiniment souvent
+\item[Obstruction-free :] Pas d'adversaire vu que l'on coupe les autres threads
+\end{itemize}
+
+\subsection{Structures non bloquantes}
+\subsubsection{Les outils}
+On redescend au niveau architectural : les outils sont fournis par le processeur :
+\begin{itemize}
+\item \texttt{old-value $\leftarrow$ atomic-add(variable, value)} \emph{sans verrou} (il s'agit d'un verrou sur une ligne mémoire pendant le temps de l'opération $\to$ temps d'exécution borné)
+\item \texttt{old-value $\leftarrow$ atomic-swap(variable, value)} écrit un valeur en mémoire et renvoie son ancienne valeur
+\item \texttt{old-value $\leftarrow$ atomic-CAS(variable, test, new)} : atomic compare and swap : compare et échange la variable si et seulement si elle vaut \texttt{test}. Dans tous les cas, la valeur initiale de la variable est retournée.
+\end{itemize}
+
+D'un point de vu théorique, $atomic-CAS$ à la puissance du consensus (si on vote sur la valeur, à la fin tout le monde à voté sur une valeur proposé et tout le monde est au courant du résultat). Sur le plan logique pure, \texttt{atomic-add} et \texttt{atomic-CAS} sont équivalents, \texttt{atomic-swap} est plus faible.
+
+\paragraph{Exemple} \texttt{add} atomic en obstruction-free en utilisant \texttt{atomic-CAS}:\\
+\begin{algorithm}[H]
+\Void{add (int* x, int a)}{
+	int old, new\;
+	\Do{atomic-CAS(x, old, new)}{
+	old = *x\;
+	new = old + a\;
+	}
+}
+\end{algorithm}
+\bigskip
+
+Locking mechanism in Linux: ticket-lock\\
+\begin{algorithm}[H]
+int ticket\;
+int billet\;
+\Void{lock()}{
+	int billet = atomic-add(\&ticket,1)\;
+	\While{guichet$<$billet}{
+		wait()\;
+	}
+}
+
+\Void{unlock()}{
+	atomic-add(\&guichet,1)\;
+}
+\end{algorithm}
+
+Noter que \texttt{atomic-CAS} est un lock en lui-même, appelé \texttt{spinlock}.
+\begin{algorithm}
+\Void{lock()}{
+	\While{CAS(\&l, 0, 1) == 1}{
+		wait()\;
+	}
+}
+\Void{unlock()}{
+	l=0\;
+}
+\end{algorithm}
+\paragraph{Attention} Ne JAMAIS l'utiliser : l'attente est \emph{active} (besoin de lecture \emph{et écriture}), ce qui sature le bus !
+
+
+\paragraph{Les modèles mémoire}
+Il définit les ordonnancements possibles des accès mémoires. Un exemple de problème :
+
+\begin{algorithm}[H]
+\Label(send){
+	msg = "coucou"\;
+	recu = true\;
+}
+
+\Label(recv){
+	\While{recu==false}{
+		printf(msg)\;	
+	}
+}
+\end{algorithm}
+A cause des écriture différés du processeur, il est pourrait être possible que la valeur lue par \texttt{printf} ne soient pas encore écrite en mémoire.
+\bigskip
+
+Chaque processeur donne des garanties spécifiques. Un principe commun est qu'en local ($\Rightarrow$ pour le même thread), toute lecture succédant à un écriture lit la dernière valeur écrite.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.5\linewidth]{write_buffer.eps}
+\caption{\label{fig:write_buffer}Principe du Write Buffer}
+\end{figure}
+
+De manière similaire, il existe également un Read Buffer de principe similaire au Write Buffer (mais implémenté à des endroit différents).
+
+\paragraph{Information} Chaque écriture du cache est précédé d'une lecture, car le cache est accessible ligne par ligne, il faut donc conserver les anciennes données.
+\bigskip
+
+Le modèle du X86 est le \emph{TSO : Total Store Order}
+\begin{itemize}
+\item Les lectures ne sont jamais réordonnancées entre elles
+\item Les écritures non plus
+\item Une écriture après une lecture n'est pas réordonnancée
+\item Une lecture après un écriture peut être réordonnancée s'il s'agit de deux cases mémoires distinctes
+\end{itemize}
+\bigskip
+
+Si jamais un des ces cas devait arriver, le buffer responsable de la seconde opération consulte l'autre buffer, et on attend que la première opération soit propagée en mémoire (ce qui est un trou à performances, mais nécessaire pour la programmation.
+
+\paragraph{Attention à la lecture après écriture dans deux cases mémoires distinctes} Bien que en pratique ça ne soit pas dérangeant.
+%Initialement : $t_1=t_2=0$.
+%\begin{itemize}
+%\item[$P_1$ :]écrit $x$, 2\\
+%$t_1=$ lit $y$
+%\item[$P_2$ :]écrit $y$, 1\\
+%écrit $x$, 1
+%\item[$P_3$ :]$t_2$ = lit $x$
+%\end{itemize}
+%Mais à voir selon 
+Les instructions autorisées sont \texttt{lock xadd}, \texttt{xchg} et \texttt{lock xchg}.
+
+Pour éviter le seul réordonnancement possible, \texttt{mfence} permet une barrière mémoire, qui vide les buffers lecure et écriture. \emph{Attention}, en C, il faut donc en mettre car on ne connait pas la plateforme d'exécution. Le préfixe d'instruction \texttt{lock} intègre automatiquement un \texttt{mfence} ainsi que la visibilité immédiate de l'écriture après l'instruction préfixée.
+\bigskip
+
+
+Il n'y a pas de garantie de réordonnancement en C avant le C11. Cependant il existe des instruction atomique pour les compilateurs, tels \texttt{\_\_sync\_fetch\_and\_add}, \texttt{\_\_sync\_lock\_test\_and\_set} (pour \texttt{xchg}, vraiment bizarre) \texttt{\_\_sync\_val\_compare\_and\_swap}, et la barrière mémoire \texttt{\_\_sync\_synchronisze}. Sur du X86, pas de soucis, mais attention si le code doit être exécuté sur des archi spécifiques. Il en existe un pour C11 ou C++11, mais très relâché.
+\bigskip
+
+
+En Java, tout réordonnancement est possible, mais les variables déclarées \emph{volatiles} génèrent une barrière mémoire à chaque accès. De plus, des barrières seront présentes lors de l'entrée et la sortie des sections critiques.
+\bigskip
+
+En particulier, il faut éviter d'utiliser un lock non volatile pour initialiser une variable.
 
 \end{document}
