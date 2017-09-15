@@ -354,15 +354,17 @@ Le modèle du X86 est le \emph{TSO : Total Store Order}
 Si jamais un des ces cas devait arriver, le buffer responsable de la seconde opération consulte l'autre buffer, et on attend que la première opération soit propagée en mémoire (ce qui est un trou à performances, mais nécessaire pour la programmation.
 
 \paragraph{Attention à la lecture après écriture dans deux cases mémoires distinctes} Bien que en pratique ça ne soit pas dérangeant.
-%Initialement : $t_1=t_2=0$.
-%\begin{itemize}
-%\item[$P_1$ :]écrit $x$, 2\\
-%$t_1=$ lit $y$
-%\item[$P_2$ :]écrit $y$, 1\\
-%écrit $x$, 1
-%\item[$P_3$ :]$t_2$ = lit $x$
-%\end{itemize}
-%Mais à voir selon 
+Initialement : $t_1=t_2=0$.
+\begin{itemize}
+\item[$P_1$ :]écrit $x$, 2\\
+$t_1=$ lit $y$
+\item[$P_2$ :]écrit $y$, 1\\
+écrit $x$, 1
+\item[$P_3$ :]$t_2$ = lit $x$
+\end{itemize}
+En cohérence séquentielle (sans réordonnancement), il est impossible d'avoir ${x,t_1,t_2}={2,0,1}$. En effet $x=2$ s'effectue avant $x=1$, et la lecture de $x$ s'effectue entre ces deux opérations. Or cela est possible en TSO (la lecture de $t_1$ peut être effectuée en tout premier lieu).
+
+ 
 Les instructions autorisées sont \texttt{lock xadd}, \texttt{xchg} et \texttt{lock xchg}.
 
 Pour éviter le seul réordonnancement possible, \texttt{mfence} permet une barrière mémoire, qui vide les buffers lecure et écriture. \emph{Attention}, en C, il faut donc en mettre car on ne connait pas la plateforme d'exécution. Le préfixe d'instruction \texttt{lock} intègre automatiquement un \texttt{mfence} ainsi que la visibilité immédiate de l'écriture après l'instruction préfixée.

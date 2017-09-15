@@ -1,0 +1,153 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+\usepackage{caption}
+%\usepackage{pgfplots}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{footnote}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{bbm}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{multirow}
+\usepackage{amsfonts}
+\usepackage[boxed,linesnumbered,noend]{algorithm2e}
+\usepackage{qcircuit}
+\usepackage{enumerate}
+\usepackage{eurosym}
+
+\newtheorem{thm}{Theorem}
+\newtheorem{prop}{Propriety}
+\newtheorem{lemma}{Lemma}
+\newtheorem{defi}{Definition}
+\newtheorem{coro}{Corollary}
+
+
+
+\setlength{\oddsidemargin}{0pt}
+% Marge gauche sur pages impaires
+\setlength{\evensidemargin}{0pt}
+% Marge gauche sur pages paires
+\setlength{\textwidth}{470pt}
+% Largeur de la zone de texte 
+\setlength{\topmargin}{0pt}
+% Pas de marge en haut
+\setlength{\headheight}{13pt}
+% Haut de page
+\setlength{\headsep}{10pt}
+% Entre le haut de page et le texte
+\setlength{\footskip}{40pt}
+% Bas de page + séparation
+\setlength{\textheight}{630pt}
+% Hauteur de la zone de texte
+
+\title{Donnée et Apprentissage}
+\author{Nicolas Vayatis\\
+ENS Cachan}
+\date{}
+
+\newcommand{\note}{\medskip\noindent\underline}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+
+Notre professeur fait partie du labo CMLA (\emph{Centre de Mathématiques et de Leurs Applications}) faisant parti du MLMDA (\emph{Machine Learning and Massive Data Analysis}) étudiant principalement :
+\begin{itemize}
+\item Optimisation séquentielle et apprentissage actif
+\item Machine Learning sur des signaux temporels
+\item Processus de diffusion dans les réseaux avec des applications dans la santé publique (virus) et propagation d'information (virus informatique et réseaux sociaux)
+\end{itemize}
+
+Le laboratoire effectue principalement de la recherche (publications) et de la vulgarisation (pour les industries, les politiques, etc) et également des outils numérique (codes, portails, logiciel).
+\bigskip
+
+\section{Introduction}
+Il existe trois grands problèmes avec les données :
+\begin{itemize}
+\item Classification (Apprentissage supervisé) : labels discret ($\to$ catégories)
+\item Régression (Apprentissage supervisé) : labels continus ($\to$ prédire un prix)
+\item Clustering ou segmentation (Apprentissage non supervisé $\to$ pas de labels)
+\end{itemize}
+
+Il existe également deux approches :
+\begin{itemize}
+\item L'approche statistique classique \emph{paramétrique}
+\item L'approche par apprentissage \emph{non paramétrique}
+\end{itemize}
+
+\paragraph{Principe :}
+De par des données historiques $Z_i = (\underbrace{X_i}_{\text{mesures}},\underbrace{Y_i}_{\substack{\text{label si}\\\text{cadre supervisé}}})$, après un apprentissage $A$ fournit une transformée $\hat{f}$ permettant une \emph{règle de décision}, qui est le résultat de $\hat{f}(X_{n+1})$. La fonction $\hat{f}$ est testée, ce qui permet de juger ses performances avant son utilisation.
+\bigskip
+
+En statistique classique :
+\begin{itemize}
+\item On fixe la famille de lois qui génère les $Z_i$
+\item On en estime les paramètre de la loi, par exemple avec des méthodes de maximum de vraisemblance
+\item On fait du plug-in pour construire la règle de décision
+\end{itemize}
+\bigskip
+
+En apprentissage :
+\begin{itemize}
+\item On fixe une structure de fonctions pour les règles de décision
+Par exemple
+\[f_{\omega, \omega_0} (x) = 
+\begin{cases}
+\text{"chat"} & \text{si} \quad \omega^T x + \omega_0 > 0\\
+\text{"chien} & \text{sinon}\\
+\end{cases}\]
+\item On fixe un critère de performance, par exemple :
+\[\hat{L}_n (f)= \dfrac{1}{n}\sum_{i=1}^{n} \mathbbm{1} \{ (f(X_i) = \text{"chien"} \land Y_i=\text{"chat"}) \lor (f(X_i)=\text{"chat"} \land Y_i=\text{"chien"} \} \]
+\item L'algorithme d'apprentissage doit minimiser $\hat{L}_n (f_{\omega,\omega_0})$ sur $\mathcal{F}$
+\end{itemize}
+
+\paragraph{Loi du mélange}
+Soit $X$ un vecteur aléatoire sur $\mathbb{R}^d$ suivant une loi de mélange. On considère $K$ composantes de loi de densité $f_k$ pour $1\leq k \leq K$.
+
+Un paramètre du mélange est $p=(p_1, ... p_K) \in \Delta_K \subset \mathbb{R}^K$ ou $\Delta_K$ est un simplexe de $\mathbb{R}^K$ :
+\[\Delta_K = \big\{ p = (p_1,...,p_K)^T \in \mathbb{R}^K_+ : \sum_{k=1}^K p_k = 1 \big\}\]
+
+La densité du mélange est la loi de $X$ :
+\[ f_X(x) = \sum_{k=1}^K p_kf_k(x) \qquad \forall x\in \mathbb{R}^d\]
+
+
+\paragraph{Variables latentes (labels)}
+%Cf slides
+On note $Y = (Y_1, ..., Y_k)^T$ avec $Y_K \in \{0,1\}$, $\sum_{k=1}^K Y_k = 1$.
+Les $Y_k$ sont des drapeaux exclusifs.
+%TODO
+
+
+\paragraph{Quels Problème décisionnels ?}
+
+\begin{enumerate}
+\item Clustering ou classification non supervisée : 
+\end{enumerate}
+
+%TODO
+
+\subsection{Expectation Maximisation}
+
+\begin{defi}[Maximum de vraisemblance]
+Soit $Z_1,...,Z_n$ des variables aléatoires indépendantes et de même loi $z \mapsto f(z,\theta*)$,  $\theta*$ paramètre inconnu. On appelle maximum de vraisemblance l'estimateur de $\theta*$ défini par 
+\[\hat{\theta} \in \arg \max_{\theta\in\Theta} \prod_{i=1}^n f(Z_i, \theta)\]
+
+On utilise souvent la log-vraisemblance du modèle du mélange gaussien pour l'observation $X$ :
+%TODO
+
+
+
+\end{defi}
+
+
+\end{document}
