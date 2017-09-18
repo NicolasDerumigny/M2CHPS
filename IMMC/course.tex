@@ -22,6 +22,7 @@
 \usepackage{qcircuit}
 \usepackage{enumitem}
 \usepackage{eurosym}
+\usepackage{ulem}
 
 \newtheorem{thm}{Theorem}
 \newtheorem{prop}{Propriety}
@@ -160,7 +161,7 @@ Tout est donnée par rapport à la position initiale. On suit chaque point, donc
 
 
 \subsubsection{Vision Eulérienne}
-Elle est la plus utile en mécanique des fluides. En effet pour un fluide, on ne sait pas exactement d'où la particule est partie. On se donne alors pour tout point $M(x,y,z)$ du milieu la vitesse $v(t,x(t),y(t),z(t))$. Dans ce cas,
+Elle est la plus utile en mécanique des fluides. En effet pour un fluide, on ne sait pas exactement d'où la particule est partie. On se donne alors pour tout point $M(x,y,z)$ du milieu la vitesse $v(t,x(t),y(t),z(t))$. Dans ce cas
 \begin{align*}
 \vec{a}_M (t) & = \dfrac{\Deriv \vec{v}}{\Deriv t}\\
 & = \dfrac{\partial \vec{v}_M(t)}{\partial t} + \vec{v} \grad \vec{v}
@@ -178,7 +179,10 @@ On pose :
 & = \underbrace{\dfrac{\partial \vec{\Phi}}{\partial M_0}}_{= \mathbb{F}} (\overrightarrow{M_0N_0}) + ... \qquad \text{(développement limité)}
 \end{align*}
 
-On note $\mathbb{F}$ la \emph{matrice gradient de la transformation}. Pour qualifier le \emph{cisaillement} (c'est à dire le fait que l'objet ne fait pas que tourner sur lui-même par exemple, mais que les angles évoluent). On utilise alors la \emph{matrice de déformation} $\mathbb{E}$. On parle aussi de \emph{tenseurs}.
+On note $\mathbb{F}$ la \emph{matrice gradient de la transformation}, qui dépend de $t$ et de $M_0$. 
+Par l'intermédiaire de $\mathbb{F}$, on peut déduire l'évolution d'un petit volume de matière $V_0$ :  $V = V_0 \cdot \det (\mathbb{F})$
+
+Pour qualifier le \emph{cisaillement} (c'est à dire le fait que l'objet ne fait pas que tourner sur lui-même par exemple, mais que les angles évoluent). On utilise alors la \emph{matrice de déformation} $\mathbb{E}$. On parle aussi de \emph{tenseurs}.
 
 \[\mathbb{E} = \dfrac{1}{2} \left ( \mathbb{F} \transpose\mathbb{F} - \mathbb{I} \right ) \in \mathscr{S}_3(\mathbb{R})\]
 
@@ -188,7 +192,7 @@ Les coefficients diagonaux correspondent à l'allongement :
 & = \dfrac{1}{2} \; \hdots\\
 & = \dfrac{1}{2\ell_0 ^2} \left ( \ell - \ell_0^2 \right )
 \end{align*}
-Avec $\ell_0$ la longueur originale du vecteur $\overrightarrow{MA}_0$ selon $Ox$.
+Avec $\ell_0$ la longueur originale du vecteur infinitésimal $\overrightarrow{M_0A_0}$ selon $Ox$.
 \bigskip
 
 De même, les coefficients hors-diagonale quantifient le \emph{glissement} (ou \emph{rotation}) :
@@ -197,16 +201,20 @@ De même, les coefficients hors-diagonale quantifient le \emph{glissement} (ou \
 & = ... \\
 & = \dfrac{\Delta \ell}{2 \Delta_0 \ell_0} \cos \alpha
 \end{align*}
-Avec $\Delta_0$ la longueur originale du vecteur $\overrightarrow{M_0B_0}$ selon $\vec{y}$ et $\alpha$ l'angle entre $\overrightarrow{MA}$ et $\overrightarrow{MB}$
+Avec $\Delta_0$ la longueur originale du vecteur infinitésimal $\overrightarrow{M_0B_0}$ selon $\vec{y}$ et $\alpha$ l'angle entre $\overrightarrow{MA}$ et $\overrightarrow{MB}$. A $t=0$, $\alpha = \dfrac{\pi}{2}$.
 
-\paragraph{Exemple} Un cylindre en translation selon $\vec{x}$.
+\paragraph{Exemple} 
+
+\begin{enumerate}
+\item
+Un cylindre en translation selon $\vec{x}$.
 
 \begin{align*}
 \overrightarrow{OM}_0 \left\lvert \begin{matrix}
 x_0\\
 y_0\\
 z_0\\
-\end{matrix} \right. \mapsto 
+\end{matrix} \right. \longmapsto 
 \overrightarrow{OM}(t) \left\lvert \begin{matrix}
 x(t) = x_0 + b(t)\\
 y(t) = y_0\\
@@ -219,5 +227,160 @@ On trouve $\mathbb{E} = \begin{pmatrix}
 0 & 1 & 0 \\
 0 & 0 & 1 \\
 \end{pmatrix}$ $\to$ pas de déformation.
+
+\item 
+Un cylindre en rotation d'axe $Oz$
+
+\begin{align*}
+\overrightarrow{OM}_0 \left\lvert \begin{matrix}
+x_0\\
+y_0\\
+z_0\\
+\end{matrix} \right. \longmapsto 
+\overrightarrow{OM}(t) \left\lvert \begin{matrix}
+x(t) = x_0 \cos\theta - y_0\sin \theta\\
+y(t) = x_0\sin\theta + y_0\cos \theta\\
+z(t) = z_0\\
+\end{matrix} \right.
+\end{align*}
+
+On trouve 
+\[ \mathbb{F} = \begin{pmatrix}
+\cos\theta & -\sin\theta & 0\\
+\sin\theta & \cos\theta & 0\\
+0 & 0 & 1\\
+\end{pmatrix}
+\]
+
+et
+\[\mathbb{E} = \mathbb{I}_3\]
+
+
+\item
+Soit un carré de matière de côté $\eta$, avec $\vec{v}(M_0)=\alpha \left\lvert \begin{matrix}
+y_0\\0\\0
+\end{matrix}\right. $ (il s'étale en formant un parallélogramme à volume constant).
+
+Dans ce cas, on trouve : 
+\[\mathbb{F} = \begin{pmatrix}
+1 & \alpha t & 0\\
+0 & 1 & 0\\
+0 & 0 & 1
+\end{pmatrix}
+\]
+
+et
+
+\[\mathbb{E}= \begin{pmatrix}
+0 & \alpha t & 0\\
+\alpha t & (\alpha t)^2 & 0\\
+0 & 0 & 0
+\end{pmatrix}
+\]
+Ce qui est cohérent physiquement : les longueurs sur $Oy$ varient, et tout comme les angles avec ce dernier.
+
+\item Soit un carré de côté $\eta$ avec $\vec{v}(M_0)=\alpha \left\lvert \begin{matrix}
+y_0\\-x_0\\0
+\end{matrix}\right.$ (il tourne tout en s'agrandissant mais garde sa forme).
+
+
+On trouve :
+\[\mathbb{F} = \begin{pmatrix}
+1 & \alpha t & 0\\
+-\alpha t & 1 & 0\\
+0 & 0 & 1\\
+\end{pmatrix}
+\]
+et
+\[
+\mathbb{E} = \dfrac{1}{2}\begin{pmatrix}
+(\alpha t)^2 & 0 & 0\\
+0 & (\alpha t)^2 & 0\\
+0 & 0 & 0\\
+\end{pmatrix}
+\]
+Ce qui est également physiquement cohérent : les angles (coefficients hors diagonales) ne varient pas, mais les longueurs sur $Ox$ et $Oy$ augmentent avec $t$.
+\end{enumerate}
+
+\subsubsection{Vision Lagrangienne}
+Outre $\mathbb{F}(t,M_0)$ et $\mathbb{E}(t, M_0)$, on introduit le \emph{déplacement} $\vec{u}$, défini par $\overrightarrow{OM}=\overrightarrow{OM_0}+\vec{u}$. On a alors $\mathbb{F}= \mathbb{I} + \grad_{| M_0} \vec{v}$
+
+Dans ce cas :
+\begin{align*}
+\mathbb{E} & = \dfrac{1}{2}[\mathbb{F}\transpose \mathbb{F} - \mathbb{I}]\\
+& = \dfrac{1}{2} \left[ \underbrace{(\mathbb{I} + \grad \vec{u})\transpose(\mathbb{I}+\grad \vec{v}) - \mathbb{I})}_{= \mathbb{I}+ \grad \vec{u} + \grad \transpose \vec{u} + \underbrace{\text{\sout{$\grad \transpose \vec{u}\grad \vec{u}$}}}_{\substack{\text{négligé pour les solides}\\\text{avec de petites déformations}}}} \right]\\
+& \simeq \underbrace{\dfrac{1}{2} \left[ \grad_{M_0} \vec{v} + \grad_{M_0} \transpose\vec{v} \right]}_{\varepsilon (\vec{u})\text{ déformation linéarisée}}\\
+\end{align*}
+
+\paragraph{Note}
+$\mathbb{F}$,$\mathbb{E}$ et $\varepsilon$ sont des composants sans unité, de l'ordre de $10^{-6}$ à $10^{-3}$.
+
+\subsubsection{Vision eulérienne}
+Pour avoir une idée de la déformation dans le milieu, on introduit
+\[\mathbb{D} = \dfrac{1}{2} \left[ \grad_M \vec{v} + \grad_M \vec{v} \right]\]
+Avec $\dfrac{\deriv  \overrightarrow{MN}}{\deriv t} = \mathbb{D} \cdot \overrightarrow{MN}$. $\mathbb{D}$ est appelé \emph{tenseur taux de déformation}, son unité est la $s^{-1}$.
+
+
+\paragraph{Exemple} $\vec{v}(M,t) = \lvert \begin{matrix}
+v_x = \omega y\\
+v_y = \omega x + a\omega^2 t\\
+0
+\end{matrix}$
+Passage à une vision lagrangienne $\to$ retour à la notion de trajectoire
+\begin{align*}
+v_x & = \omega y = \dfrac{\deriv x}{\deriv t}\\
+v_y & = -\omega x + a\omega^2 t = \dfrac{\deriv y}{\deriv	t}\\
+v_z & = 0 = \dfrac{\deriv z}{\deriv t} \Rightarrow z(t) = z_0
+\end{align*}
+
+On se retrouve avec deux équations différentielles :
+\begin{align*}
+& \dfrac{\deriv^2 y}{\deriv t ^2} + \omega^2 y = a \omega^2\\
+\Rightarrow & \begin{cases}
+y(t) = a + K_1\cos \omega t + K_2\sin\omega t\\
+x(t) = -\dfrac{1}{\omega}(-K_1 \omega \sin \omega t + K_2 \cos \omega t) + a \omega t)
+\end{cases}
+\end{align*}
+
+\section{Représentation des efforts dans la matière}
+\subsection{Classifications des efforts}
+Le vrai mot serait plutôt "action mécanique". On parle :
+\begin{itemize}[label=\textbullet]
+\item D'efforts extérieurs surfaciques $\to$ densité surfacique $\vec{F}_d$ en $N.M^{-2}$, par exemple la pression (attention, elles ne sont pas toujours orthogonales à la surface !)
+\item D'efforts extérieurs volumiques $\to $ densité volumique $\vec{f}_d$ en $N.m^{-3}$.
+\item D'efforts intérieurs surfaciques, en $N.m^{-2}$.
+\end{itemize}
+
+\subsection{Effort de cohésion : notion de contrainte}
+Soit une surface élémentaire $\deriv S$ de normale $\vec{n}$. Il a été montré (Cauchy) que l'effort s'appliquant dessus $\deriv \vec{F}$ (en $N$) se décompose en $\deriv \vec{F} = \deriv S \times \vec{T} (M,\vec{n})$ où $\vec{T}$ est appelé \emph{vecteur contrainte} en $N.m^{-2}$. Il a également été prouvé $\vec{T}(M,\vec{n})=\sigma (M).\vec{n}$ où $\sigma$ est une matrice (tenseur) des contraintes. 
+
+\subsubsection*{Quelques propriétés}
+$\sigma$ est symétrique (cela vient du fait que le système est à l'équilibre).
+
+\paragraph{Exemple} Traction pure : on étire de chaque côté une barre. Dans ce cas,
+\[\sigma(M) = \begin{pmatrix}
+\sigma_0 & 0 & 0\\
+0 & 0 & 0\\
+0 & 0 & 0\\
+\end{pmatrix}_{(\vec{e}_1, \vec{e}_2, \vec{e}_3)}\]
+\bigskip
+De la même manière que $\mathbb{E}$, les coefficients diagonaux représentent les \emph{tractions} et les coefficients non-diagonaux le \emph{cisaillement}.
+$\sigma$ étant symétrique, on peut la diagonaliser :
+\[\sigma(M) = \begin{pmatrix}
+\sigma_I & 0 & 0\\
+0 & \sigma_{II} & 0\\
+0 & 0 & \sigma_{III}
+\end{pmatrix}_{(e_I, e_{II}, e_{III})}
+\]
+
+Les coefficients diagonaux sont appelés \emph{contraintes principales} et la base \emph{base principale}.
+
+
+\subsection{Pression hydrostatique}
+Une bille dans l'eau : $\sigma = -p \mathbb{I}$
+
+
+\paragraph{Ordre de grandeurs} $|| \sigma || \sim 100$ MPa
+
 
 \end{document}
