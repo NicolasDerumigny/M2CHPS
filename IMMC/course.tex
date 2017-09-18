@@ -1,0 +1,223 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+\usepackage{caption}
+%\usepackage{pgfplots}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{footnote}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{bbm}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{multirow}
+\usepackage{amsfonts}
+\usepackage[boxed,linesnumbered,noend]{algorithm2e}
+\usepackage{qcircuit}
+\usepackage{enumitem}
+\usepackage{eurosym}
+
+\newtheorem{thm}{Theorem}
+\newtheorem{prop}{Propriety}
+\newtheorem{lemma}{Lemma}
+\newtheorem{defi}{Definition}
+\newtheorem{coro}{Corollary}
+
+\newcommand{\deriv}{\mathrm{d}}
+\newcommand{\Deriv}{\mathrm{D}}
+\newcommand{\grad}{\;\mathrm{grad}\;}
+\newcommand{\transpose}{\hspace{.1em}{}^t\hspace{-.1em}}
+
+\setlength{\oddsidemargin}{0pt}
+% Marge gauche sur pages impaires
+\setlength{\evensidemargin}{0pt}
+% Marge gauche sur pages paires
+\setlength{\textwidth}{470pt}
+% Largeur de la zone de texte 
+\setlength{\topmargin}{0pt}
+% Pas de marge en haut
+\setlength{\headheight}{13pt}
+% Haut de page
+\setlength{\headsep}{10pt}
+% Entre le haut de page et le texte
+\setlength{\footskip}{40pt}
+% Bas de page + séparation
+\setlength{\textheight}{630pt}
+% Hauteur de la zone de texte
+
+\title{Introduction à la Mécanique des Milieux Continus}
+\author{L. Chamoin\\
+ENS Cachan\\
+\url{chamoin@ens-paris-saclay.fr}}
+\date{}
+
+\newcommand{\note}{\medskip\noindent\underline}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\paragraph{Objectifs}
+\begin{itemize}
+\item Comprendre les enjeux d'étudier les milieu déformables
+\item Introduire les concepts de base de la MMC
+\item Développer les modèles mathématiques qui en découlent
+\item Méthode de résolution numérique et application au HPC
+\item Limites de ces modélisations
+\end{itemize}
+\bigskip
+
+Notation :
+\begin{itemize}
+\item Deux examens + quelques TD notés
+\end{itemize}
+
+Notre professeur fait parti du LMT, un laboratoire du CNRS étudiant des application sur les milieux solides.
+
+\section{Introduction}
+Qu'est-ce qu'un milieu continu ? $\to$ milieu physique dans lequel les grandeurs physiques varient de manière continue ("pas de trous"). La notion de milieu continu dépend de l'échelle : par exemple la structure ($\sim 100m-10m$) d'un avion peut être modélisée en utilisant la MMC, mais pas ses cristaux/molécules ($\sim 1 \mu m-1nm$).
+\bigskip
+
+La MMC est l'étude des mouvements, déformations et efforts dans les milieux continus avec de nombreuses application (météorologie, aéronautique, conception de bâtiments, ...). Dans ce cours, on s'intéressera principalement à l'aéronautique. Par exemple, pour un avion, il faudra décrire les phénomènes physiques au sein de la matière, les modéliser mathématiquement et les résoudre.
+
+Différentes approches sont possible : de très physique (matériaux) à très mathématique (équations) ou très informatique (logiciels de calcul). Une méthode numérique très utilisée en MMC pour les milieux solides est la \emph{Méthode des éléments finis} ; et la \emph{méthode des cylindres finis} pour les fluides.
+
+L'outil informatique est intéressant pour la résolution de problèmes, qui est la partie la plus dure de la MMC, car à la fois les matériaux utilisés sont complexes, mais la géométrie également ($\to$ non résolvable à la main $\to$ besoin de gros clusters).
+
+La principale différence entre fluide et solide est que les solides se déforment relativement peu.
+
+Au niveau industriels, des logiciels ont été conçu, notamment :
+\begin{itemize}
+\item ASTER (développé par EDF)
+\item CATIA (Dassault)
+\item CAST3M (gratuit et en français, développé par le CEA)
+\item NASTRAN et ABAQUS : développés par des informaticiens, vendus pour l'industrie
+\end{itemize}
+Chaque logiciel est plus performant sur une tâche précise.
+
+\subsection{La simulation numérique}
+Face à un problème, il faut dans un premier temps réaliser un modèle mathématique théorique (géométrie, comportement, matériaux, ...) puis une maquette numérique (un maillage par exemple) sur lequel sera utilisée la résolution numérique.
+
+Mathématiquement, le problème est régie par des équations aux dérivées partielles, sur lequel ont utilisera la plupart du temps la méthode des éléments finis (informatique).
+\bigskip
+
+\paragraph{Historique des simulations numériques}
+\begin{itemize}
+\item[1850 :] Méthodes analytiques de résolution, assez rudimentaire, résolution manuelle
+\item[1940 :] Théorie de la \emph{Méthode des éléments finis}, sans outils informatique cependant (premières applications sur les avions de chasse $\to$ dirigé par l'armée.
+\item[1960 :] Utilisation limitée de la simulation, apparition des premiers codes de calcul (NASTRAN)
+\item[1980 :] Développement avec l'essor de l'informatique
+\item[2000 :] Standardisation
+\end{itemize}
+\bigskip
+
+En terme de complexité du problème, on parle en nombre d'inconnues. Pour un ordinateur portables, on peut calculer dans un temps raisonnable des problèmes à environ $10^4$ degrés de libertés (ddl). Pour la recherche, les grosses machines peuvent calculer entre $10^6$ et $10^8$ ddl.
+\bigskip
+
+
+La simulation numérique est donc un domaine couvrant à la fois physique (et SI) pour la créations de modèles, mathématiques pour la formulation du problème et les méthode numériques ; et informatique pour la mise en données et les algorithmes de résolution.
+
+
+\subsection{Applications}
+La simulation numérique a de nombreuses applications, pour la physique, biophysique, productique (comment imprimer en 3D de manière optimale ?), etc. Au LMT (laboratoire de mécanique et de technologie) à Cachan, financée à 70\% par airbus.
+
+L'apport de la simulation numérique à l'industrie permet de réduire les essais nécessaire ($\to$ on les simule à la place). Actuellement la simulation numérique est limitée à l'échelle de plusieurs pièces rassemblée ensemble, car on ne peut encore simuler un assemblage complexe, ni contrôler la marge d'erreur. On tends aujourd'hui à développer la simulation, car elle permet d'économiser de l'argent (pas besoin de pièces) et du temps.
+
+
+\paragraph{Utilité des modèles} \emph{Essentially, all models are wrong, but some are useful}
+
+Une modélisation ne sera jamais conforme à la réalité, mais on peut borner l'erreur. On peut par exemple contrôler l'erreur que l'on fait en modifiant le maillage.
+
+
+\section{Cinématique des milieux continus}
+Il s'agit de l'étude des mouvement des points de la matière du milieu.
+
+\subsection{Repérage en mécanique du point}
+\begin{itemize}[label=\textbullet]
+\item Temps $t$
+\item Référentiel (ou observateur)
+\item Vecteur position $t \mapsto \overrightarrow{OM}(t)$
+\item Vitesse $\vec{v}$ : $t \mapsto \vec{v}(M,t) = \dfrac{\deriv \overrightarrow{OM}}{\deriv t}$
+\item Accélération $\vec{a}$ : $t \mapsto \vec{a}(M,t) = \dfrac{\deriv^2 \overrightarrow{OM}}{\deriv t}$
+\end{itemize}
+
+\subsection{Notion de milieu continu}
+Le milieu évolue avec le temps, en chaque point du milieu on peut utiliser les méthodes de repérage ponctuelles. Le milieu continue est un ensemble infini de points !
+
+Deux visions existent : la vision \emph{Lagrangienne} et \emph{Eulérienne}.
+
+\subsubsection{Vision lagrangienne}
+La vision Lagrangienne est la plus utilisée par les solides, on étudie le mouvement du solide par rapport à sa position initiale déterminée appelée \emph{configuration de référence}. Elle consiste en la donnée pour tout temps et tout point $M_0$ du solide $\Omega$ de configuration initiale $\Omega_0$ la trajectoire $\overrightarrow{OM}_0(t)$.
+
+Tout est donnée par rapport à la position initiale. On suit chaque point, donc $\vec{a}=\dfrac{\deriv \vec{v}}{\deriv t}$
+
+
+\subsubsection{Vision Eulérienne}
+Elle est la plus utile en mécanique des fluides. En effet pour un fluide, on ne sait pas exactement d'où la particule est partie. On se donne alors pour tout point $M(x,y,z)$ du milieu la vitesse $v(t,x(t),y(t),z(t))$. Dans ce cas,
+\begin{align*}
+\vec{a}_M (t) & = \dfrac{\Deriv \vec{v}}{\Deriv t}\\
+& = \dfrac{\partial \vec{v}_M(t)}{\partial t} + \vec{v} \grad \vec{v}
+\end{align*}
+
+
+\subsection{Déformation}
+Cela signifie que la distance entre les points change. En vision lagrangienne, soit $M_0$ et $N_0$ appartenant à $\Omega_0$. Le vecteur $\overrightarrow{M_0N_0}$ évolue pour donner $\overrightarrow{MN}(t)$ donnant la déformation de la matière en fonction du temps.
+
+On pose :
+\begin{align*}
+\overrightarrow{MN} & = \overrightarrow{ON} - \overrightarrow{OM}\\
+& = \underbrace{\overrightarrow{ON}(t,\overrightarrow{ON}_0}_{\vec{\Phi}(t,\overrightarrow{ON}_0)} - \underbrace{\overrightarrow{OM}(t,\overrightarrow{OM}_0}_{\vec{\Phi}(t,\overrightarrow{ON}_0}\\
+& = \vec{\Phi}(t, \overrightarrow{OM}_0 + \overrightarrow{M_0N_0}) - \vec{\Phi}(t, \overrightarrow{OM}_0)\\
+& = \underbrace{\dfrac{\partial \vec{\Phi}}{\partial M_0}}_{= \mathbb{F}} (\overrightarrow{M_0N_0}) + ... \qquad \text{(développement limité)}
+\end{align*}
+
+On note $\mathbb{F}$ la \emph{matrice gradient de la transformation}. Pour qualifier le \emph{cisaillement} (c'est à dire le fait que l'objet ne fait pas que tourner sur lui-même par exemple, mais que les angles évoluent). On utilise alors la \emph{matrice de déformation} $\mathbb{E}$. On parle aussi de \emph{tenseurs}.
+
+\[\mathbb{E} = \dfrac{1}{2} \left ( \mathbb{F} \transpose\mathbb{F} - \mathbb{I} \right ) \in \mathscr{S}_3(\mathbb{R})\]
+
+Les coefficients diagonaux correspondent à l'allongement :
+\begin{align*}
+\mathbb{E}_{11} & = \vec{x}\mathbb{E}\vec{x}\\
+& = \dfrac{1}{2} \; \hdots\\
+& = \dfrac{1}{2\ell_0 ^2} \left ( \ell - \ell_0^2 \right )
+\end{align*}
+Avec $\ell_0$ la longueur originale du vecteur $\overrightarrow{MA}_0$ selon $Ox$.
+\bigskip
+
+De même, les coefficients hors-diagonale quantifient le \emph{glissement} (ou \emph{rotation}) :
+\begin{align*}
+\mathbb{E}_{12} & = \vec{y}\transpose \mathbb{E} \vec{x}\\
+& = ... \\
+& = \dfrac{\Delta \ell}{2 \Delta_0 \ell_0} \cos \alpha
+\end{align*}
+Avec $\Delta_0$ la longueur originale du vecteur $\overrightarrow{M_0B_0}$ selon $\vec{y}$ et $\alpha$ l'angle entre $\overrightarrow{MA}$ et $\overrightarrow{MB}$
+
+\paragraph{Exemple} Un cylindre en translation selon $\vec{x}$.
+
+\begin{align*}
+\overrightarrow{OM}_0 \left\lvert \begin{matrix}
+x_0\\
+y_0\\
+z_0\\
+\end{matrix} \right. \mapsto 
+\overrightarrow{OM}(t) \left\lvert \begin{matrix}
+x(t) = x_0 + b(t)\\
+y(t) = y_0\\
+z(t) = z_0\\
+\end{matrix} \right.
+\end{align*}
+
+On trouve $\mathbb{E} = \begin{pmatrix}
+1 & 0 & 0 \\
+0 & 1 & 0 \\
+0 & 0 & 1 \\
+\end{pmatrix}$ $\to$ pas de déformation.
+
+\end{document}
