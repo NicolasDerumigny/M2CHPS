@@ -19,7 +19,7 @@
 \usepackage{amsfonts}
 \usepackage[boxed,linesnumbered,noend]{algorithm2e}
 \usepackage{qcircuit}
-\usepackage{enumerate}
+\usepackage{enumitem}
 \usepackage{eurosym}
 
 \newtheorem{thm}{Theorem}
@@ -48,8 +48,8 @@
 % Hauteur de la zone de texte
 
 \title{Génie Logiciel pour le Calcul Scientifique}
-\author{Marc Tajchman\\
-\url{marc.tajchman@cea.fr}}
+\author{Marc Tajchman \hspace{5em} Julien Bigot\\
+\url{marc.tajchman@cea.fr} \hspace{1.5em} \url{julien.bigot@cea.fr}}
 \date{}
 
 \newcommand{\note}{\medskip\noindent\underline}
@@ -172,6 +172,189 @@ Exemple :
 \item Salome (CEA-EDF), propose des composants de pré- et post-processing (CAO, maillage, visualisation), une UI graphique et textuelle (python) 
 \end{itemize}
 
+\section{Outils Utiles}
+\begin{itemize}[label=\textbullet]
+\item SSH
+\item Commande "module"
+\item Git
+\item Compilation et link
+\item Make et cmake
+\item MPI et mpirun
+\item Batch scheduler
+\end{itemize}
+
+\paragraph{Pour le 26/09/2017 :} Envoyer les connaissances sur le concept au début du cours ainsi que les connaissances acquises.
+
+\paragraph{SSH}
+Pour "secure shell", permet d'accéder à distance à une machine. Par exemple, on peut lancer la commande \texttt{ssh poincare} sur les machines de la maison de la simulation. Attention, on est dans la machine distance \emph{uniquement dans le terminal} !
+
+\paragraph{Commande \texttt{module}} Elle gère l'environnement des machines parallèles. Notamment, elle configure les exécutables, les headers, les librairies statiques et dynamique, la documentation, etc. Elle rend disponible ces éléments \emph{seulement dans le shell}, tout comme \texttt{ssh}.
+
+Les différentes commandes sont :
+\begin{itemize}[label=\textbullet]
+\item \texttt{module av} (pour \textit{available}), qui affiche les modules disponibles
+\item \texttt{module li} (pour \textit{list}), qui affiche les modules actuellement chargés
+\item \texttt{module load \$\{module\}} pour charger un module (ex : \texttt{module load intel}
+\item \texttt{module unload \$\{module\}} pour décharger un module
+\item \texttt{module purge} qui décharge tous les modules actuellement chargés
+\end{itemize}
+
+\paragraph{Git}
+C'est un \emph{gestionnaire de version délocalisé}. Il permet de garder un historique des versions que l'on manipule, afin de tracer les changement et de collaborer sur un même projet entre plusieurs personnes. \emph{Il s'agit de la première chose à maitriser pour faire du développement}. Les notions de base sont :
+\begin{itemize}[label=\textbullet]
+\item Le répertoire de travail
+\item Le dépôt avec historique (Repository) :
+\begin{itemize}
+\item Révisions (commits)
+\item Un DAG des commits, ou les noeuds sont soit des commits soit des merges (fusion de commits).
+\end{itemize}
+\end{itemize}
+Les principales commandes sont :
+\begin{itemize}
+\item \texttt{git clone} Faire une copie locale d'un repository existant
+\item \texttt{git commit -m "message"} sauver l'état courant avec \texttt{message} comme description du commit
+\item \texttt{git add \$\{fichiers\}} ajouter les fichiers au prochain commit
+\item \texttt{git pull} fusionner l'état courant avec la version distante (peut se décomposer en \texttt{git fetch} pour télécharger les changements et \texttt{git merge} pour les fusionner)
+\item \texttt{git push} envoyer ses changements locaux sur la version globale
+\item \texttt{qgit} ou \texttt{gitk}, deux outils graphiques pour voir l'historique 
+\item \texttt{git status} changements depuis le dernier commit
+\item \texttt{git logs} Historique des changements
+\end{itemize}
+
+Pour plus d'informations, voir \url{http://eagain.net/articles/git-for-computer-scientists/}
 
 
+\paragraph{Compilation et édition de lien}
+La \emph{compilation} permet de transformer un fichier source (.c, .f90, ...) en un fichier objet (.o le plus souvent). Par exemple, \texttt{cc -c -o test.o test.c}.
+
+
+L'\emph{édition de lien} permet de rassembler $n$ fichiers objets en un exécutable. Par exemple, \texttt{cc -o tsts tst1.o tst2.o tst3.o}.
+
+Ces deux commandes peuvent être combinées, par exemple \texttt{cc -o tst tst1.c tsts2.c tst3.c}.
+
+
+\paragraph{Compilation avec une bibliothèque} A la compilation, il faut spécifier l'emplacement du header (.h en C, .mod en fortran) via l'option \texttt{-I \$\{dossier\}}, par exemple \texttt{cc -I /usr/include/ -c -o tst.o tst.c} et bien indique par un \texttt{include} (C) ou \texttt{use} (fortran). D'un point de vue purement technique cette étape n'est pas toujours nécessaire (en tout cas après le C99), mais il vaut mieux éviter.
+
+Au linkage, la bibliothèque (.a pour les librairies statiques, .so pour les dynamiques) est référencée en ligne de commande (sans extension, via l'option \texttt{-l}). Par exemple \texttt{cc -lm -o tst.c tst.o}. Le répertoire de recherche des bibliothèques est spécifié par l'option \texttt{-L}. Par exemple \texttt{cc -L /usr/lib/ -lm -o tst tst.o}. Dans le cas où la bibliothèque n'est pas trouvée, une \emph{erreur de symbole} sera retournée.
+\bigskip
+
+Une bibliothèque est composée par un header et son implémentation. Il en existe deux types
+\begin{itemize}
+\item Statique : en .a, il s'agit d'un simple .zip contenant des .o, qui est ajouté à l'exécutable lors de la compilation
+\item Dynamique : en .so, elle est chargée en mémoire lors de l'exécution du programme
+\end{itemize}
+
+Les bibliothèques dynamiques utilisée par un exécutable sont référencée par la commande \texttt{ldd myexe}. Pour voir la liste des symboles (adresses des fonctions fournies et utilisées, éventuellement provenant d'autres bibliothèques), on peut utiliser la commande \texttt{nm -D mylib.so}. Le répertoire de chargement des librairies dynamiques est spécifié par la variable d'environnement \texttt{LD\_LIBRARY\_PATH}.
+
+
+\paragraph{Makefile}
+Il s'agit d'un fichier effectuant les étapes de compilation uniquement si cela est nécessaire. L'avantage par rapport  un fichier bash est que le nombre de commande sera plus faible avec l'extension du nombre de fichier. Cela s'effectue par la commande \texttt{make}.
+
+La commande lit le fichier "Makefile", dont la structure est celle ci:\\
+\begin{algorithm}[H]
+règle : source1 source2\\
+<TAB> commande\_to\_gen target source1 source2\\
+\end{algorithm}
+L'outil \texttt{CMake} permet de générer automatiquement les bibliothèques et dépendances. Il lit un fichier "CMakeLists.txt" qui utilise un vrai langage de script, par exemple\\
+\begin{algorithm}[H]
+find\_package(MPI)\\
+add\_executable(myexe source1.c source2.c)\\
+target\_link\_library(myexe mpi)\\
+\end{algorithm}
+
+\paragraph{Batch Scheduler (ordonnanceur en français)}
+Un \emph{cluster} est constitué d'une machine pour $U$ utilisateurs. Sur un noeud de calcul, on utilise OpenMP pour communiquer, et d'autres standards pour communiquer entre nœuds, le plus souvent MPI.
+
+Sur un machine perso, on a un seul utilisateur et plusieurs programme, les ressources de travail étant partagées dans le temps (\emph{multiplexage temporel}, sous Linux, l'OS change de programme tous les $50\; \mu s$). Cela n'est pas acceptable pour un supercalculateur : les processeurs sont affectés à une seule tâche via un \emph{scheduler}.
+
+Le "batch" de pointcare est \texttt{LoadLeveler}, qui accepte plusieurs commandes :
+\begin{itemize}[label=\textbullet]
+\item \texttt{llsubmit} pour créer un job
+\item \texttt{llcancel} pour annuler un job
+\item \texttt{llq} pour voir les jobs en cours
+\item \texttt{llinffo.py} pour voir des informations sur l'état des nœuds
+\end{itemize}
+
+Le job est décrit dans un fichier bash dont des commentaires spéciaux décrivent certains paramètres du job :\\
+\begin{algorithm}[H]
+%TODO
+\#!/bin/bash\\
+\#@ class = clallmds\\
+\#@ job\_name = RUN\_01\\
+\#@ total\_tasks = 32\\
+\#@ node = \\
+\#@ environement = COPY\_ALL\\
+\#@ wall\_clock\_limit = temps maximal de gestion des tâches \tcc*{(max 20:00:00 (20h))}
+\#@ output = \$(job\_name).\$(jobid).log\\
+\#@ error = \$(job\_name).\$(jobid).log\\
+\#@ job\_type = mpich\\
+\#@ queue \tcc*{valide le job}
+\tcc{Contenu standard du script, exécuté sur le premier nœud}
+\tcc{La variable \texttt{\$\{LOADL\_TOTAL\_TASK\}} contient le nombre total de tâches}
+\end{algorithm}
+
+Il faut bien entendu penser à la documentation : \url{google.fr} et les pages \texttt{man} de Linux !
+
+\section{Projet}
+\paragraph{Déroulement}
+\begin{enumerate}
+\item Prise en main du code et premiers commits :
+\begin{itemize}
+\item Génération des fichiers HDF5
+\end{itemize}
+\item Développement de quelque post-processing
+\begin{itemize}
+\item Gradient
+\item Dérivée temporelle
+\item Génération d'image
+\end{itemize}
+\item Rendu 1ère partie
+\begin{itemize}
+\item 3 séances de couplage
+\item Rendu 2ème partie + soutenance
+\end{itemize}
+\end{enumerate}
+
+
+\paragraph{Deux premières séances :}
+\begin{itemize}
+\item Prise en main du code
+\item Génération de fichier HDF5
+\item Outils de post-process
+\begin{itemize}
+\item HDF5 $\to$ température moyenne
+\item HDF5 $\to$ gradient $\to$ HDF5
+\item HDF5 $\to$ dérivé temporelle $\to$ HDF5
+\item HDF5 $\to$ image (png)
+\end{itemize}
+\end{itemize}
+
+
+
+\paragraph{Trois séances suivantes}
+\begin{itemize}
+\item Couplage via HDF5 (déjà fait)
+\item Couplage via même processus
+\begin{itemize}
+\item Appel de fonction
+\item Ecriture sur disque
+\end{itemize}
+\item Couplage via MPI
+\begin{itemize}
+\item Processus dédiés
+\item Ecriture depuis les processus dédiés uniquement
+\end{itemize}
+\item Objectifs
+\begin{itemize}
+\item Maximiser la réutilisation de code
+\item Penser maintenabilité et Génie logiciel.
+\end{itemize}
+\end{itemize}
+
+\paragraph{Evaluation}
+\begin{itemize}
+\item Code Rendu (1ère et 2ème partie)
+\item Soutenance
+\item Le projet compte pour le moitié de la note finale
+\end{itemize}
 \end{document}
