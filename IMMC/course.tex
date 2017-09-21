@@ -4,6 +4,8 @@
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
 
+
+
 \usepackage{caption}
 %\usepackage{pgfplots}
 \usepackage{listings}
@@ -308,8 +310,8 @@ Outre $\mathbb{F}(t,M_0)$ et $\mathbb{E}(t, M_0)$, on introduit le \emph{déplac
 Dans ce cas :
 \begin{align*}
 \mathbb{E} & = \dfrac{1}{2}[\mathbb{F}\transpose \mathbb{F} - \mathbb{I}]\\
-& = \dfrac{1}{2} \left[ \underbrace{(\mathbb{I} + \grad \vec{u})\transpose(\mathbb{I}+\grad \vec{v}) - \mathbb{I})}_{= \mathbb{I}+ \grad \vec{u} + \grad \transpose \vec{u} + \underbrace{\text{\sout{$\grad \transpose \vec{u}\grad \vec{u}$}}}_{\substack{\text{négligé pour les solides}\\\text{avec de petites déformations}}}} \right]\\
-& \simeq \underbrace{\dfrac{1}{2} \left[ \grad_{M_0} \vec{v} + \grad_{M_0} \transpose\vec{v} \right]}_{\varepsilon (\vec{u})\text{ déformation linéarisée}}\\
+& = \dfrac{1}{2} \left[ \underbrace{(\mathbb{I} + \grad \vec{u})\transpose(\mathbb{I}+\grad \vec{v}) - \mathbb{I})}_{= \mathbb{I}+ \grad \vec{u} + \transpose \grad \vec{u} + \underbrace{\text{\sout{$\transpose \grad \vec{u}\grad \vec{u}$}}}_{\substack{\text{négligé pour les solides}\\\text{avec de petites déformations}}}} \right]\\
+& \simeq \underbrace{\dfrac{1}{2} \left[ \grad_{M_0} \vec{v} + \transpose \grad_{M_0} \vec{v} \right]}_{\varepsilon (\vec{u})\text{ déformation linéarisée}}\\
 \end{align*}
 
 \paragraph{Note}
@@ -321,11 +323,13 @@ Pour avoir une idée de la déformation dans le milieu, on introduit
 Avec $\dfrac{\deriv  \overrightarrow{MN}}{\deriv t} = \mathbb{D} \cdot \overrightarrow{MN}$. $\mathbb{D}$ est appelé \emph{tenseur taux de déformation}, son unité est la $s^{-1}$.
 
 
-\paragraph{Exemple} $\vec{v}(M,t) = \lvert \begin{matrix}
+\paragraph{Exemple} $\vec{v}(M,t) = \left\lvert \begin{matrix}
 v_x = \omega y\\
 v_y = \omega x + a\omega^2 t\\
 0
-\end{matrix}$
+\end{matrix}\right.$
+
+
 Passage à une vision lagrangienne $\to$ retour à la notion de trajectoire
 \begin{align*}
 v_x & = \omega y = \dfrac{\deriv x}{\deriv t}\\
@@ -381,6 +385,235 @@ Une bille dans l'eau : $\sigma = -p \mathbb{I}$
 
 
 \paragraph{Ordre de grandeurs} $|| \sigma || \sim 100$ MPa
+
+
+\paragraph{Écrasement d'un solide entre deux plaques rigides} On suppose qu'il y a glissement sur la plaque du bas mais frottement dur la plaque supérieure.
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.6\linewidth]{deux_plaques.eps}
+\end{figure}
+
+On trouve :
+\[\mathbb{E} = \dfrac{1}{2}\begin{pmatrix}
+\left(1 + \dfrac{\Delta L}{L_0}\left(1-\dfrac{\Delta H}{H_0}\right)\right)^2 - 1 &
+- \left(1 + \dfrac{\Delta L}{L_0}\left(1-\dfrac{\Delta H}{H_0}\right)\right) x_0 \dfrac{\Delta L}{L_0 H_0} & 0 \\
+\times & \left(x_0\dfrac{\Delta L}{L_0}\right)^2 + \left(1 -\dfrac{\Delta H}{H_0}\right)^2 - 1 & 0\\
+\times & \times & 0\\
+\end{pmatrix}
+\]
+
+Et
+\[ \varepsilon (\vec{u}) = 
+\begin{pmatrix}
+\dfrac{\Delta L}{L_0}\left(1-\dfrac{y_0}{H_0}\right) & -\dfrac{x_0}{2}\dfrac{\Delta L}{L_0 H_0} & 0\\
+\times & -\dfrac{H}{H_0} & 0\\
+\times & \times & 0
+\end{pmatrix}
+\]
+
+Ce qui correspond à considérer que les mouvements sont petits ($\Delta H \ll H_0$ et $\Delta L \ll H_0$).
+
+\subsection{Notion de contrainte}
+Elle est particulièrement adaptée à une version eulérienne, il existe un autre outil (matrice de Piola).
+\bigskip
+
+Une surface élémentaire $\deriv S$ subit une force $\overrightarrow{\deriv F} = \deriv S . \vec{T}(M,\vec{n})$ où $\vec{T}=\mathbb{\sigma}(M).\vec{n}$ avec $\mathbb{\sigma}$ la matrice des contraintes.
+
+\paragraph{Exercice}
+\begin{enumerate}
+\item (2.4 de la fiche) 
+Essai de traction dans une éprouvette d'essai de traction cylindrique de rayon $R$.\\
+Attention à bien orienter la normale en fonction de quelle matière effectue son effort sur qui (cela change le signe). Le chargement extérieur est $p_0 S_0 \vec{e}_1$, donc $\vec{T}(M,\vec{e}_1)=\rho_0 \vec{e}_1$. La section étudiée est une ellipse d'inclinaison $\theta$ par rapport à  une section verticale. Sa surface est donc $\pi \dfrac{R^2}{\cos \theta}$. Sur cette ellipse, on a alors $\vec{T}(M,\vec{n}=\dfrac{p_0 S_0 \vec{e}_1}{S_1}=p_0\cos \theta \vec{e}_1$.
+
+En fait, puisqu'on a une traction selon $\vec{e}_1$, on pouvait directement dire que
+\begin{align*}
+\vec{T}(M,\vec{n}) & = \sigma (M).\vec{n}\\
+& = \begin{pmatrix}
+p_0 & 0 & 0 \\
+0 & 0 & 0\\
+0 & 0 & 0\\
+\end{pmatrix} . \vec{n}
+\end{align*}
+
+D'un point de vu physique, on peut différencier l'effort \emph{normal} et l'effort \emph{tangentiel}. Ici, on trouve un effort normal de $p_0\cos^2 \theta$ et un effort tangentiel de $p_0 \dfrac{\sin (2\theta)}{2}$ (avec un peu de trigo...), maximal quand $\theta = \dfrac{\pi}{2}$ ce qui explique pourquoi les matériaux sensibles au cisaillement cassent avec un plan de cassure à $45^\circ$.
+
+\item Essai de bi-traction : on exerce une pression uniforme $\sigma_1$ selon $\vec{e}_1$ et $\sigma_2$ selon $\vec{e}_2$.
+
+\begin{align*}
+\sigma & =
+\begin{pmatrix}
+\sigma_1 & 0 & 0\\
+0 & \sigma_2 & 0\\
+0 & 0 & 0\\
+\end{pmatrix}\\
+\vec{T}(M,\vec{n}) = \sigma.\vec{n} & =
+\begin{pmatrix}
+\sigma_1 & 0 & 0\\
+0 & \sigma_2 & 0\\
+0 & 0 & 0\\
+\end{pmatrix}
+\cdot
+\begin{pmatrix}
+\cos \theta\\
+\sin \theta\\
+0\\
+\end{pmatrix}
+=
+\begin{pmatrix}
+\sigma_1 . \cos \theta\\
+\sigma_2 . \cos \theta\\
+0\\
+\end{pmatrix}
+\end{align*}
+
+On trouve
+\[\vec{T}(M,\vec{n}) = [\sigma_1 \cos^2 \theta + \sigma_2 \sin^2 \theta] \vec{n} + [(\sigma_2-\sigma_1)\cos \theta \sin \theta]\vec{t}\]
+Ceci forme le cercle de Mohr.
+
+\end{enumerate}
+
+
+\subsection{Équations de conservation}
+Elles pilotent l'évolution de l'état de la matière (déformation, contraintes).
+
+\subsubsection{Conservation de la masse}
+\paragraph{Vision lagrangienne}
+\[n_0 = \int_{\omega_0} \rho_0 \deriv v_0 = \int_{\omega} \deriv v\Rightarrow \rho_0 = \rho. \det \mathbb{F}\]
+
+\paragraph{Vision eulérienne}
+\[\dfrac{\deriv}{\deriv t} \int_{\omega(t)} \rho (L,t) \deriv v = 0\]
+Dont on extrait :
+\[\dfrac{\partial \rho}{\partial t}+\text{div} (\rho \vec{v}) = 0\]
+Pouvant se simplifier :
+\begin{align*}
+\text{Cas stationnaire : }& \text{div} (\rho \vec{v}) = 0\\
+\text{Cas incompressible : }& \dfrac{\deriv \rho}{\deriv t} = 0 \to \text{div} \vec{v} = 0\\
+\end{align*}
+
+\subsubsection{Conservation de la quantité de mouvement (équilibre de la matière)}
+
+Si $\omega$ est un volume et $\gamma$ sa frontière.
+
+\[\int_{\omega(t)} \vec{f} \deriv v + \int_{\gamma} \vec{T}(M,\vec{n}) \deriv S \]
+Que l'ont peut réécrire en
+\[ \overrightarrow{\text{div}}\; \sigma + \vec{f} = \rho \cdot \dfrac{\deriv \vec{v}}{\deriv t} (=0 \text{ en statique})\]
+
+Noter qu'il existe aussi une équation de conservation de l'énergie $\to$ pas traité ici.
+
+\paragraph{Exemple :}
+Un cube sur un plan subissant uniquement son poids propre.
+On suppose 
+\[\sigma(M) = 
+\begin{pmatrix}
+0&0&0\\
+0&0&0\\
+0&0&a+bz\\
+\end{pmatrix}
+\]
+
+On trouve alors $\sigma_{33} = \rho . g . (z-H)$.
+
+
+\subsubsection{Comportement du matériau}
+\paragraph{Idée} Trouver un lien entre $\mathbb{E},\varepsilon, \mathbb{D}$ et $\sigma$.
+
+\paragraph{Cas d'un solide (en petite perturbation) :} $\sigma(M) = f_{M}(\varepsilon(M))$
+\begin{itemize}[label=$\star$]
+\item Aspect homogène/hétérogène : dépendance avec la \textit{position} du point $M$.
+\item Aspect isotrope/anisotrope : dépendance du comportement avec l'\textit{orientation}. Si le matériau est isotrope, $\sigma = f(\varepsilon, \text{Tr}(\varepsilon), \text{Tr}(\varepsilon^2), \text{Tr}(\varepsilon^3))$
+\end{itemize}
+
+\begin{itemize}
+\item Cas d'un matériau élastique : Pas de notion de mémoire, et $\varepsilon_{ii} = \dfrac{\Delta \ell}{\ell_0}$ ($\varepsilon_{ii}$ coefficient de $\varepsilon$ dans la direction de l'élongation).\\
+Dans le cas d'un élastique linéaire : $\sigma = K\cdot\varepsilon$, ou $K$ est un \emph{tenseur d'ordre 4} (dit tenseur d'élasticité de Hooke, $K_{ijkl}$, alors que $\sigma$ et $\varepsilon$ sont des matrices carrées d'ordre 3). $K$ a donc $3^4=81$ coefficients, mais par symétrie on se ramène à $21$ coefficients indépendants. Il peut y avoir des symétries :
+\begin{itemize}[label=\textbullet]
+\item Matériaux orthotrope : 3 plans de symétrie orthogonaux $\to$ 9 coefficients
+\item Matériaux isotropes transverse : (matériaux en couches) $\to$ 4 coefficients
+\item Matériaux isotropes : 2 coefficients : $E,\nu$ $\to$ $E=$ module d'Young et $\nu=$coefficients de Poisson ; ou (autre représentation) $\lambda,\mu$ coefficients de Lamé
+
+Dans ce cas, on a $\sigma = 2\mu \varepsilon + \lambda \text{Tr}(\epsilon) \mathbb{I}$ avec $2\mu = \dfrac{E}{1+\nu}$ et $\lambda = \dfrac{\nu E}{(1+\nu)(1-2\nu)}$. Noter que si $\nu = 0,5$, alors le matériau est incompressible.
+
+Pour
+\[
+\sigma = \begin{pmatrix}
+\tilde{\sigma} & 0 & 0\\
+0 & 0 & 0\\
+0 & 0 & 0\\
+\end{pmatrix}
+\]
+Alors 
+\[\varepsilon = 
+\begin{pmatrix}
+\dfrac{\tilde{\sigma}}{E} & 0 & 0\\
+0 & -\dfrac{\nu}{E}\tilde{\sigma} & 0\\
+0 & 0 & -\dfrac{\nu}{E}\tilde{\sigma}
+\end{pmatrix}
+\]
+\paragraph{Ordre de grandeur :}
+\begin{itemize}[label=$\star$]
+\item $\varepsilon \sim 1^{-3}-10^{-6}$
+\item $\tilde{\sigma}\sim 0-100$ MPa
+\item $E \simeq 100$ GPa
+\item $\nu \sim 0,2 - 0,3 < 0,5$ (peut etre négative pour certaines micro-structures spécifiques (on tire dessus et tout s'allonge).
+\end{itemize}
+\end{itemize}
+\end{itemize}
+
+\paragraph{Cas d'un fluide :}
+\begin{itemize}
+\item fluide parfait : $\sigma = -p . \mathbb{I}$, où $p$ est la pression. Il n'y a alors pas de contrainte tangentielle donc pas de viscosité.
+\item fluide newtonien : $\sigma = -pI + 2 \mu D + \underbrace{\lambda \text{Tr}[D].\mathbb{I}}_{\text{si incompressible}}$
+\end{itemize}
+
+\section{Écriture d'un problème de MMC}
+Pour un problème fluide de volume $\omega$ et surface $\gamma$, on utilise :
+\begin{align*}
+\dfrac{\partial \rho}{\partial t} + \text{div}(\rho \vec{v}) & = 0\\
+\overrightarrow{\text{div}}\sigma + \vec{f} & = \rho\dfrac{\deriv \vec{v}}{\deriv t}\\
+\sigma & = -p\mathbb{I} + 2 \mu \mathbb{D} \quad ( + \lambda \text{Tr}[\mathbb{D}] \mathbb{I})
+\end{align*}
+Et les conditions aux limites (valeurs de $\vec{v}$ ou $\sigma \vec{n}$ sur $\gamma$).
+\bigskip
+
+Pour les solides dans le modèle des petites perturbations ($\rho_0 = \rho \det \mathbb{F}$) :
+\begin{align*}
+\overrightarrow{\text{div}} \sigma + \vec{f} & = \Big(\rho \dfrac{\deriv \vec{v}}{\deriv t} \Big)\\
+\sigma & = 2\mu\varepsilon (\vec{u}) + \lambda \text{Tr}[\varepsilon(\vec{u})]\mathbb{I}
+\end{align*}
+Ainsi que les conditions aux limites.
+
+\paragraph{Résolutions}
+\begin{itemize}[label=$\star$]
+\item On intuite une forme pour $\vec{u}, \vec{v}, \sigma$.
+\item On regarde si on peut vérifier toutes les équations. Si non, on revient à l'étape précédente. 
+\end{itemize}
+
+\paragraph{Exemple :}
+\begin{enumerate}
+\item Écoulement dans une conduite cylindrique d'axe $Oz$. On suppose que $\vec{v}=v(r).\vec{e}_z$, et que l'ont est en régime stationnaire.
+
+En reprenant les équations antérieures : 
+\begin{align*}
+\text{div}(\vec{v}) = 0\\
+\overrightarrow{\text{div}}\dfrac{\deriv \vec{v}}{\deriv t}=\rho [\dfrac{\partial \vec{v}}{\partial t} + (\nabla \vec{v})\vec{v}]\\
+\sigma = -p \mathbb{I} + 2\mu \mathbb{D}\\
+\vec{v}=\vec{0} \text{ en } r=R\\
+p(z=0)=p_0\\
+p(z=L)=p_L\\
+\end{align*}
+
+\item Un matériau élastique cylindrique linéaire isotrope homogène $(E,\nu)$ (ou $(\lambda, \mu)$), possédant une pression interne, et statique.
+\begin{align*}
+\overrightarrow{\text{div}}\sigma = \vec{0}\\
+\sigma = 2\mu \varepsilon(\vec{u}) + \lambda \text{Tr}[\varepsilon(\vec{u})] \mathbb{I}\\
+\sigma \vec{n}=\vec{0} \text{ sur les bords } S_0,S_H\\
+\sigma \vec{n}=p_i\vec{e}_r \text{ sur } S_{int}\\
+\end{align*}
+
+
+
+\end{enumerate}
+
 
 
 \end{document}
