@@ -28,7 +28,7 @@
 \newtheorem{defi}{Definition}
 \newtheorem{coro}{Corollary}
 
-\SetKwBlock{Label}{label}{end}%
+\SetKwBlock{Label}{}{}%
 \SetKwRepeat{Do}{do}{while}%
 \SetKwProg{Void}{void}{}%
 
@@ -311,7 +311,7 @@ Noter que \texttt{atomic-CAS} est un lock en lui-même, appelé \texttt{spinlock
 \paragraph{Attention} Ne JAMAIS l'utiliser : l'attente est \emph{active} (besoin de lecture \emph{et écriture}), ce qui sature le bus !
 
 
-\paragraph{Les modèles mémoire}
+\subsubsection{Modèles mémoire}
 Il définit les ordonnancements possibles des accès mémoires. Un exemple de problème :
 
 \begin{algorithm}[H]
@@ -379,5 +379,165 @@ En Java, tout réordonnancement est possible, mais les variables déclarées \em
 \bigskip
 
 En particulier, il faut éviter d'utiliser un lock non volatile pour initialiser une variable.
+
+\section{Structures de données}
+\subsection{La pile}
+Structure \emph{LIFO} : Last In First Out. La pile possède deux méthodes : \texttt{push} (empiler) et \texttt{pull} (dépiler).
+
+\paragraph{Avec des locks :} On verrouille lors des \texttt{push}/\texttt{pop}.
+
+\paragraph{Sans lock :} L'idée est de faire un \texttt{atomic-CAS} sur le pointeur de tête.
+
+\begin{algorithm}[H]
+\Void{push(head, element)}{
+	\Do{\texttt{atomic-CAS(\&head, n.next, n) != n.next}}{
+		Node n = new Node (head, element)\;
+	}
+	\tcp{Si la tête n'as pas changé, on insère en changeant la valeur de la tête}
+}
+\end{algorithm}
+
+On voit ici un \emph{point de linéarisabilité} : on ramène \texttt{push} à une seul opération atomique.
+
+Le principe est la même pour \texttt{pop}
+
+
+\begin{algorithm}[H]
+\Void{pop(head)}{
+	\Do{\texttt{atomic-CAS(\&head, n, n.next) != n}}{
+		Node n = head\;
+	}
+}
+\end{algorithm}
+
+Au niveaux des garanties : \texttt{push} et \texttt{pop} sont obstruction-free (en coupant tous les autres threads, au pire on recommence un seule fois car la tête n'est plus modifiée. Elles sont également lock-free, (se prouve par induction sur le nombre de threads) : si on demande un infinité de push, une infinité est bien exécutée mais pas forcément par tous les threads. Il peut par contre y avoir famine (un thread peut être infiniment bloqué). Par contre, il n'est pas wait-free.
+
+
+\subsection{La queue}
+Il s'agit d'une structure \emph{FIFO} : first in first out. Deux fonctions sont possibles : \texttt{enqueue(element e)} pour ajouter un élément à la tête, et \texttt{dequeue()} pour le retirer. Il y a donc deux pointeurs : \texttt{head} et \texttt{tail} (pointeur de début pour dequeue de fin pour l'ajout de nouveaux élément). Il faut faire attention au cas de liste vide, où l'on doit changer à la fois \texttt{head} et \texttt{tail}.
+
+Pour gérer ces cas embêtants, on rajout un faux noeud (la list ne peut plus être vide). Pour le \texttt{dequeue()} (côté tail), on va utiliser le même algorithme que \texttt{pop()}. On va conserver à tout instant trois invariants :
+\begin{itemize}
+\item Le premier noeud est en seconde position (la première est le faux noeud)
+\item Les listes commençant par \texttt{head} et \texttt{tail} se rejoignent
+\item Le dernier noeud est toujours le noeud de queue
+\end{itemize}
+
+\begin{algorithm}[H]
+\Void{enqueue(Element e)}{
+	Node node = new Node (null, e)\;
+	\Do{CAS(\&old.next, null, node) != node}{
+		Node old = tail\;
+		\While{old.next != null}{
+			CAS(\&tail, old, old.next)\;
+			old = tail\;		
+		}	
+	}
+	CAS(\&tail, old, node)\;
+}
+\end{algorithm}
+
+Le \texttt{dequeue} est le même qu'avant à l'exception près du faux noeud à ne pas prendre en compte. Dans ce cas, le fake évolue pour être l'élément retiré.
+
+
+
+
+\subsection{La liste chainée}
+On va autoriser des noeuds non valides à exister dans la liste : on les marques gris et on les ignore. Pour les griser, on va mettre à 1 le bit de poids faible de pointeur (ce qui ne l'invalide pas car les adresses mémoires sont alignées). Pour accéder au pointeur, on effectue $ptr \; \& \; -2$, pour accéder à la couleur, $ptr \; \& \; 1$.
+
+Les invariants seront alors :
+\begin{itemize}
+\item La liste est toujours connectée et ordonnée
+\item Certains noeuds supprimées peuvent rester dans la liste
+\end{itemize}
+
+\begin{algorithm}[H]
+\Void{del(coloredPointer* plist, int value)}{
+	\Label(restart :){
+		coloredPointer* pred = plist\;
+		
+		
+		\While{!found}{
+			Node cur = pointer(*pred)\;
+			
+			\If{cur == null $||$ value < cur$\to$value}{
+				\tcp{pas trouvé}
+				return\;
+			}			
+			
+			
+		
+			\If{cur $\to$ value == value}{
+				\tcp{trouvé}
+				\Do{CAS(\&cur$\to$next, n, n $|$ 1) != n}{
+					n$\to$ cur $\to$ next\;
+				}
+			}		
+		
+		
+			\If{mark(cur$\to$mext)}{
+				\tcc{cur doit être supprimé}
+				\eIf{CAS(pred, curr, pointer(cur$\to$next)) != cur}{
+					goto restart\;
+					\tcp{On est allé trop loin dans la liste}
+				}{
+					continue\;
+				}
+			}				
+			
+			
+			
+			pred = \&cur$\to$next\;
+		}
+	}
+}
+
+\end{algorithm}
+
+
+Ajout :
+
+
+
+\begin{algorithm}[H]
+\Void{add(coloredPointer* plist, int value)}{
+	\Label(restart :){
+		coloredPointer* pred = plist\;
+		
+		
+		\While{!found}{
+			Node cur = pointer(*pred)\;
+			
+			 \If{cur == null $||$ value < cur $\to$ value}{
+			 	\eIf{CAS(pred, cur, new Node(cur, value)) != cur}{
+			 		goto restart\;
+			 	}{
+					return\;			 	
+			 	}
+			 }
+		
+		
+			\If{mark(cur$\to$mext)}{
+				\tcc{cur doit être supprimé}
+				\eIf{CAS(pred, curr, pointer(cur$\to$next)) != cur}{
+					goto restart\;
+					\tcp{On est allé trop loin dans la liste}
+				}{
+					continue\;
+				}
+			}				
+			
+			
+			
+			pred = \&cur$\to$next\;
+		}
+	}
+}
+
+\end{algorithm}
+
+
+L'algorithme est obstruction-free et lock-free mais pas wait-free.
+
 
 \end{document}

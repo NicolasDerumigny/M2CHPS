@@ -20,7 +20,7 @@
 \usepackage{amsfonts}
 \usepackage[boxed,linesnumbered,noend]{algorithm2e}
 \usepackage{qcircuit}
-\usepackage{enumerate}
+\usepackage{enumitem}
 \usepackage{eurosym}
 
 \newtheorem{thm}{Theorem}
@@ -54,6 +54,8 @@ ENS Cachan}
 \date{}
 
 \newcommand{\note}{\medskip\noindent\underline}
+\newcommand{\transpose}{\hspace{.1em}{}^t\hspace{-.1em}}
+
 
 \begin{document}
 \maketitle
@@ -145,9 +147,104 @@ Soit $Z_1,...,Z_n$ des variables aléatoires indépendantes et de même loi $z \
 On utilise souvent la log-vraisemblance du modèle du mélange gaussien pour l'observation $X$ :
 %TODO
 
-
-
 \end{defi}
+
+
+
+\section{Apprentissage Statistique}
+Soit $X$ le vecteur des caractéristiques et $Y$ la classification en sortie du modèle. On modélise
+\[Y = f(X) + \epsilon\]
+Avec $\epsilon$ une variation aléatoire.
+\bigskip
+
+Avec un $f$ bien choisi on peut faire des prédictions sur de nouveaux points $X=(x_1,...,x_p)$. On peut également comprendre quels composants $X=(X_1,X_2,...,X_p)$ sont important pour expliquer $Y$, et lesquels sont hors de propos. Selon la complexité de $f$, il peut même être possible de comprendre dans quelle mesure chaque composant $X_j$ de $X$ affecte $Y$.
+
+\paragraph{Existe-t-il une meilleure $f(X)$ ?}
+Oui, l'espérance conditionnelle de $Y$ sachant $X$ soit $\mathbb{E}(Y|X=x)$. Cette fonction $f(x) \mapsto \mathbb{E}(Y|X=x)$ est appelé \emph{fonction de régression}. C'est elle qui vérifie le minimum du critère \emph{des moindres carrés :}
+\[R_{(X,Y)}(f) = \mathbb{E}[\big(Y-f(X)\big)^2]\]
+
+
+\begin{thm}
+$f(x) \mapsto \mathbb{E}(Y|X=x)$ réalise le minimum de $R_{(X,Y)}(f) = \mathbb{E}[\big(Y-f(X)\big)^2]$.
+\end{thm}
+
+$\epsilon = Y - f(x)$ est \emph{l'erreur irréductible} : même lorsque l'on connait $f(x)$, on fera toujours des erreurs de prédiction !
+
+\paragraph{Soucis :} on ne connait pas la loi des données : il faut \emph{l'estimer}. Pour ce faire, on prend une fenêtre et $\hat{f}(x) = \text{Ave}(Y|X \in \mathcal{N}(x))$ où $\mathcal{N}(x)$ est un voisinage de $x$.
+
+\paragraph{La malédiction de la dimension}
+En prenant des intervalles fixes, en grande dimension il se passe "des choses bizarres" $\to$ les points deviennent très loin les uns des autres. Autrement dit, le volume nécessaire pour garder la même quantité de points à l'intérieur augmente fortement.
+
+\section{Régression Linéaire}
+\begin{defi}
+Un modèle linéaire de dimension $p$ est un $p+1$-uplet de paramètres notés $\beta_k$. La fonction linéaire modélisée est alors :
+\[f_L(X) = \beta_0 + \beta_1X_1 + ... + \beta_p X_p\]
+
+On peut également poser $\beta = \begin{pmatrix}
+\beta_1\\
+\vdots\\
+\beta_p\\
+\end{pmatrix}$
+et ainsi
+\[f_{\beta,\beta_0} = \transpose \beta . x + \beta_0\]
+\end{defi}
+
+Le critère empirique est alors 
+\[\hat{R}_n(f_{\beta,\beta_0}) = \dfrac{1}{n}\sum_{i=1}^n \big( Y_i - (\beta_0 + \transpose\beta X_i)^2\big)\]
+
+\paragraph{Remarque :} On peut également estimer de cette manière  n'importe quelle fonction polynomiale :
+\begin{align*}
+f(X) & = \beta_0 + \transpose \beta.X\\
+& = \transpose\tilde{\beta}\cdot \begin{pmatrix}
+1 \\ X\\
+\end{pmatrix}
+\end{align*}
+Que l'on peut généraliser en 
+\[f(X) = \transpose \tilde{\beta} . g(X)\]
+Avec par exemple $g(X) = \begin{pmatrix}
+1\\X\\X^2\\X^3\\
+\end{pmatrix}$ pour un polynôme de degrés 3.
+
+\paragraph{Problèmes possibles :}
+\begin{itemize}
+\item Sur-apprentissage : apprendre des spécificités liées aux données et non à la structure implicite sous-jacente que l'on cherche à estimer
+\item Sous-apprentissage :  ne pas apprendre suffisamment de caractéristique de la part des données
+\end{itemize}
+\bigskip
+
+
+Il faut souvent faire des choix :
+\begin{itemize}
+\item Prédiction vs interprétabilité
+\item Sur vs sous apprentissage 
+\item Parcimonie vs boite noire
+\item Monitorage de la règle de décision le dans temps (Réutilisabilité ?)
+\end{itemize}
+
+
+\paragraph{Comment estimer l'efficacité d'un modèle ?} On peut découper en deux les données d'apprentissage, une partie pour l'apprentissage et l'autre pour le test.
+
+\paragraph{Choix variance-bias} Supposons que l'on veut adapter un modèle $\hat{f}(x)$ à des données d'apprentissages $\mathtt{Tr}$, et soit $(x_0, y_0)$ une observation tirée depuis la population. Si le vrai modèle est $Y= f(X) + \epsilon$ avec $f(x)=\mathbb{E}(Y|X=x)$ et $\epsilon$ un bruit indépendant de $X$, alors
+\[\mathbb{E}\Big(Y - \hat{f}(X)\Big)^2 = \mathbb{V}\big(\hat{f}(X)\big) + [\text{Bias}(\hat{f}(X))]^2 + \mathbb{V}(\epsilon)\]
+
+Avec $\text{Bias}(\hat{f}(x_0))=\mathbb{E}(\hat{f}(X))-f(X)$
+
+\paragraph{Estimation des paramètres par les moindres carrés}
+L'objectif est de minimiser $(y_i - \beta_0 \beta_i x_i)^2$
+
+\begin{defi}[RSS]
+\[\text{RSS} = e_1^2 + e_2^2 + ... + e_n^2 = (y_1 - \hat{\beta}_0 - \hat{\beta}_1.x_1)^2 + ... + (y_n - \hat{\beta}_0 - \hat{\beta}_1 x_n)^2\]
+\end{defi}
+
+\begin{defi}[$t$-statistique et $p$-value]
+\[t=\dfrac{\hat{\beta}_1 - 0}{SE(\hat{\beta}_1)}\]
+
+$\mathbb{P}(|X|>|t|)$ est une $p$-value.
+\end{defi}
+
+%TODO
+
+
 
 
 \end{document}
