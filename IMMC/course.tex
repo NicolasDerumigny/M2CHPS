@@ -25,6 +25,7 @@
 \usepackage{enumitem}
 \usepackage{eurosym}
 \usepackage{ulem}
+\usepackage{cancel}
 
 \newtheorem{thm}{Theorem}
 \newtheorem{prop}{Propriety}
@@ -34,7 +35,7 @@
 
 \newcommand{\deriv}{\mathrm{d}}
 \newcommand{\Deriv}{\mathrm{D}}
-\newcommand{\grad}{\;\mathrm{grad}\;}
+\newcommand{\grad}{\mathrm{grad}\;}
 \newcommand{\transpose}{\hspace{.1em}{}^t\hspace{-.1em}}
 
 \setlength{\oddsidemargin}{0pt}
@@ -81,6 +82,16 @@ Notation :
 \begin{itemize}
 \item Deux examens + quelques TD notés
 \end{itemize}
+
+\paragraph{28/09} Résolutions de problèmes (solides/fluides) + TD "noté"
+
+\paragraph{05/10} (matin seulement) $\to$ résolution numérique (méthode des éléments finis)
+
+\paragraph{12/10} Premier Examen ($\sim$ 2h) puis HPC/Code Mathlab
+
+\paragraph{23/10} Correction Examen 1 puis HPC (enjeux et illustrations)
+
+\paragraph{16/11} Deuxième Examen + code Mathlab
 
 Notre professeur fait parti du LMT, un laboratoire du CNRS étudiant des application sur les milieux solides.
 
@@ -525,7 +536,7 @@ On trouve alors $\sigma_{33} = \rho . g . (z-H)$.
 
 \begin{itemize}
 \item Cas d'un matériau élastique : Pas de notion de mémoire, et $\varepsilon_{ii} = \dfrac{\Delta \ell}{\ell_0}$ ($\varepsilon_{ii}$ coefficient de $\varepsilon$ dans la direction de l'élongation).\\
-Dans le cas d'un élastique linéaire : $\sigma = K\cdot\varepsilon$, ou $K$ est un \emph{tenseur d'ordre 4} (dit tenseur d'élasticité de Hooke, $K_{ijkl}$, alors que $\sigma$ et $\varepsilon$ sont des matrices carrées d'ordre 3). $K$ a donc $3^4=81$ coefficients, mais par symétrie on se ramène à $21$ coefficients indépendants. Il peut y avoir des symétries :
+Dans le cas d'un élastique linéaire : $\sigma = \mathbb{K}\cdot\varepsilon$, ou $\mathbb{K}$ est un \emph{tenseur d'ordre 4} (dit tenseur d'élasticité de Hooke, $K_{ijkl}$, alors que $\sigma$ et $\varepsilon$ sont des matrices carrées d'ordre 3). $\mathbb{K}$ a donc $3^4=81$ coefficients, mais par symétrie on se ramène à $21$ coefficients indépendants. Il peut y avoir des symétries :
 \begin{itemize}[label=\textbullet]
 \item Matériaux orthotrope : 3 plans de symétrie orthogonaux $\to$ 9 coefficients
 \item Matériaux isotropes transverse : (matériaux en couches) $\to$ 4 coefficients
@@ -609,11 +620,294 @@ p(z=L)=p_L\\
 \sigma \vec{n}=\vec{0} \text{ sur les bords } S_0,S_H\\
 \sigma \vec{n}=p_i\vec{e}_r \text{ sur } S_{int}\\
 \end{align*}
-
-
-
 \end{enumerate}
 
+\section{Quelques exemple de MMC}
+\subsection{Problèmes de MMC - Solides}
+\paragraph{Hypothèses}
+\begin{itemize}
+\item Statique
+\item Élasticité Linéaire
+\item Hypothèse des petites perturbations ($\mathbb{E}\simeq \varepsilon (\vec{u})$)
+\end{itemize}
+
+A noter que le problème est linéaire : on peut donc utiliser le principe de superposition (on peut sommer des solutions élémentaires).
+\bigskip
+
+Soit un solide $\Omega$ de bord $\Gamma$, sur lequel s'appliquent des forces volumiques $\vec{f}$. Sur une frontière $\Gamma_1$, une contrainte impose $\vec{u} = \vec{u}_1$ (typiquement un encastrement). Sur la partie complémentaire $\Gamma_2$ s'applique un effort $\vec{F}_d$.
+\bigskip
+
+On cherche alors deux grandeurs : le champ de déplacement $\vec{u}(M)$ et la matrice des contraintes $\sigma(M)$.
+\bigskip
+
+La solution de problème doit vérifier :
+\begin{itemize}[label=$\star$]
+\item $\vec{u}=\vec{u}_d$ sur $\Gamma_1$
+\item $\overrightarrow{\text{div}} \sigma + \vec{f} = \vec{0}$ (en particulier $\sigma.\vec{n} = \vec{F}_d$ sur $\Gamma_2$)
+\item $\sigma=\mathbb{K}.\varepsilon(\vec{u})$
+\end{itemize}
+
+\paragraph{Remarque} Cas isotrope: $\to$ deux coefficients définissent entièrement $\mathbb{K}$ : soit $(E,\nu)$ soit $(\lambda, \mu)$ et dans ce cas :
+\begin{align*}
+\sigma & = 2\mu \varepsilon + \lambda \text{Tr} [\varepsilon] \mathbb{I}\\
+& = \dfrac{E}{1 + \mu}\varepsilon + \dfrac{\nu.E}{(1+\nu)(1-2\nu)}\text{Tr}[\varepsilon] . \mathbb{I}\\
+\end{align*}
+
+
+\paragraph{Note} On peut tout écrire sous la forme de produits matrices-vecteurs :
+\begin{align*}
+\sigma & = \mathbb{K}.\varepsilon\\
+\underbrace{
+\begin{pmatrix}
+\sigma_{11}\\
+\sigma_{22}\\
+\sigma_{33}\\
+\sigma_{12}\\
+\sigma_{13}\\
+\sigma_{23}\\
+\end{pmatrix}}_{\hat{\sigma}}
+& =
+\underbrace{
+\begin{pmatrix}
+\times & \times & \times & \times & \times & \times\\
+\times \\
+\times \\
+\times \\
+\times \\
+\times \\
+\end{pmatrix}
+}_{\hat{K} \to \text{21 coefficients}}
+\cdot
+\underbrace{
+\begin{pmatrix}
+\varepsilon_{11}\\
+\varepsilon_{22}\\
+\varepsilon_{33}\\
+\varepsilon_{12}\\
+\varepsilon_{13}\\
+\varepsilon_{23}\\
+\end{pmatrix}
+}_{\hat{\varepsilon}}
+\end{align*}
+
+Il est possible de rajouter des $\sqrt{2}$ ou des 2 dans les $\sigma$ ou $\varepsilon$ (respectivement) de manière à retrouver $\text{Tr}[\sigma\varepsilon] = \hat{\sigma}.\hat{\varepsilon}$
+\bigskip
+
+Si le matériau est orthotrope, alors 
+\[\hat{K} = 
+\begin{pmatrix}
+\times & \times & \times & 0 & 0 & 0 \\
+\times & \times & \times & 0 & 0 & 0 \\
+\times & \times & \times & 0 & 0 & 0 \\
+&&&\times & 0 & 0\\
+&&&&\times & 0 \\
+&&&&&\times \\
+\end{pmatrix}
+\]
+(9 coefficients différents car $\hat{K}$ symétrique)
+\bigskip
+
+
+Si le matériau est isotrope, alors
+\[\hat{K} = 
+\begin{pmatrix}
+(2\mu+\lambda) & \lambda & \lambda & 0 & 0 & 0 \\
+ & (2\mu+\lambda) & \lambda & 0 & 0 & 0 \\
+& & (2\mu+\lambda) & 0 & 0 & 0 \\
+&&&2\mu & 0 & 0\\
+&&&&2\mu & 0 \\
+&&&&&2 \mu \\
+\end{pmatrix}
+\]
+
+
+
+On peut noter également que 
+\[\hat{\varepsilon}=\hat{K}^{-1}\hat{\sigma}\]
+Où $\hat{S}=\hat{K}^{-1}$ est la \emph{souplesse}.
+
+
+
+\subsubsection*{Résolution exacte de problèmes}
+Nécessite :
+\begin{itemize}
+\item Géométrie simple
+\item Chargement simple
+\item Matériaux simple
+\end{itemize}
+
+
+\paragraph{Exemples :}
+\begin{enumerate}
+\item Tube sous pression\\
+Un tube cylindrique parfait creux est soumis à une pression interne $p$. On suppose $(\mu,\lambda)$ (ou $(E,\nu)$) connus. On se donne le rayon interne $r_i$ et externe $r_e$ et la hauteur $h$.
+
+Méthode en déplacement : $\vec{u} = u_r \vec{u}_r + u_z \vec{u}_z$.
+
+Equations :
+\begin{itemize}[label=$\star$]
+\item Rien à dire : pas de contraintes ici
+\item $\overrightarrow{\text{div}} \sigma = \vec{0}$ :\\
+Sur $S_{ext}$ : $\sigma.\vec{e}_r=\vec{0}$\\
+Sur $S_{int}:\sigma.(-\vec{e}_r)=p.\vec{e}_r$\\
+Sur $S_0$ et $S_H$ : $\sigma.\vec{e}_z=0$ (les surfaces en haut et en bas du tube).
+\item $\sigma = 2\mu.\varepsilon(\vec{u})+\lambda.\text{Tr}[\varepsilon(\vec{u})]\mathbb{I}$
+\end{itemize}
+
+Après calcul, on trouve une solution de la forme $u_z = Az+B$ et $u_r(r) = Cr + \dfrac{D}{r}$, avec $B$ constante introuvable (le problème est identique à un déplacement vertical près) et $A,C,D$ constantes fixées par les conditions limites.
+
+\item Une sphère (pleine) sous pression de centre $O$, soumise à une pression $p$ uniforme. On cherche $\vec{u}(M)$ et $\sigma(M)$ tels que :
+\begin{itemize}[label=$\star$]
+\item Toujours rien
+\item $\overrightarrow{\text{div}} \sigma = \vec{0}$ et $\sigma . \vec{e}_r = -p \vec{e}_r$
+\item $\sigma = \mathbb{K} \varepsilon$
+\end{itemize}
+
+Une méthode en déplacement est possible : poser $\vec{u} = u_r \vec{e}_r$ puis résoudre.
+
+On va prendre ici une méthode en contrainte : on intuite
+\[
+\sigma = -p.\mathbb{I} =
+\begin{pmatrix}
+-p & 0 & 0\\
+0 & -p & 0\\
+0 & 0 & -p\\
+\end{pmatrix}
+\]
+
+Immédiatement, on vérifie les condition dur la divergence et sur $\sigma \vec{e}_r = -p \vec{e}_r$.
+Alors 
+\begin{align*}
+\varepsilon & = \mathbb{K}^{-1}.\sigma\\
+& = \dfrac{1+\nu}{E}\sigma - \dfrac{\nu}{E}\text{Tr}[\sigma]\mathbb{I}\\
+& = -p\dfrac{1}{E}
+\begin{pmatrix}
+1 - 2\nu & 0 & 0\\
+0 & 1-2\nu & 0\\
+0 & 0 & 1-2\nu\\
+\end{pmatrix}\\
+& = \dfrac{p(1-2\nu)}{E}\cdot\mathbb{I}
+\end{align*}
+On effectue ici une méthode en contrainte : il faut vérifier que $\varepsilon \overset{?}{\longrightarrow} \dfrac{1}{2} (\grad\vec{u} + \transpose\grad\vec{u})$.\\
+Cas simple :\\
+Si $\varepsilon = cst$, alors il existe $\vec{u}$ et $\vec{u}(M) = \varepsilon.\overrightarrow{OM} + \cancel{\vec{u}} \quad \text{(solide rigide (HPP))}$
+
+Ici, $\vec{u}=-\dfrac{p(1-2\nu)}{E}r.\vec{e}_r$. On n'observe donc uniquement de la traction et jamais de cisaillement.
+\bigskip
+
+Si la sphère est creuse, il faut rajouter un condition sur le bord intérieur : le contrainte ne peut plus être constante (elle va dépendre de $r$) $\to$ utiliser la méthode en déplacement.
+\end{enumerate}
+
+\subsection{Problèmes de MMS - Fluides}
+
+On cherche $(\vec{v}, \rho)$ tel que
+\begin{itemize}
+\item $\text{div} \sigma + \vec{f} = \rho \dfrac{\deriv \vec{v}}{\deriv t}$ avec $\dfrac{\deriv \vec{v}}{\deriv t} = \dfrac{\partial \vec{v}}{\partial t} + \nabla \vec{v}.\vec{v}$
+avec :
+\begin{itemize}[label=$\star$]
+\item $\sigma = -p\mathbb{I}$ (fluide parfait)
+\item $\sigma = -p\mathbb{I} + \pi$ avec $\pi = \underbrace{2\mu \mathbb{D}(\vec{v})}_{\text{partie visqueuse}} + \underbrace{\lambda \text{Tr}[\mathbb{D}].\mathbb{I}}_{=0 \; \text{si incompressible}}$
+\end{itemize}
+\end{itemize}
+
+
+\paragraph{Équation de Navier-Stokes}
+\[-\vec{\nabla}p + \mu \Big(\vec{\delta}\vec{v} + \overrightarrow{\text{grad}} (\text{div} \vec{v})\Big) + \vec{f} = \rho \Big[\dfrac{\partial \vec{v}}{\partial t} + \nabla \vec{v}.\vec{v}\Big] \]
+
+On défini le nombre de Reynolds $\mathcal{R}_e = \dfrac{\text{effets d'inertie}}{\text{effets visqueux}}$. Lorsque ce dernier est petit, on parle d'\emph{écoulement de Stockes}. En négligeant la gravité :
+\[-\vec{\nabla}p+\mu\vec{\nabla}\vec{v}=0\]
+(et $\text{div}\; \vec{v}=0$)
+
+
+\paragraph{Écoulement de Poiseuille}
+Écoulement incompressible principalement visqueux en négligeant la gravité dans une conduite cylindrique de longueur $L$ et de conditions limites $p(z=0)=p_0$ et $p(z=L)=p_1$.
+
+On trouve $p(z)= p_0 + \dfrac{p_1-p_0}{L}\cdot z$ et $\vec{v}=v_z \vec{e}_z$ avec $v_z=\dfrac{p_0-p_1}{4\mu L}\cdot (R^2-r^2)$. Le débit volumique $Q=\iint_{S} v_z dS = \dfrac{\pi}{8\mu L}\cdot R^4 (p_0-p_1)$
+
+\paragraph{Écoulement de Couette}
+\begin{itemize}[label=$\star$]
+\item stationnaire
+\item incompressible
+\item effets d'inertie négligés
+\end{itemize}
+
+Navier-Stokes nous donne :
+\[\mu \vec{\Delta}\vec{v} = \vec{\nabla}p\]
+On trouve alors $\mu \dfrac{\partial^2 V_x}{\partial y ^2}=\dfrac{\partial p}{\partial x}$. Or $V_x$ ne dépend que de $y$ et $p$ ne dépend que de $x$, donc $\mu \dfrac{\partial^2 V_x}{\partial y ^2}=\dfrac{\partial p}{\partial x} = cste = \alpha$.
+
+D'où $p(x) = \alpha x +p_0$. Si on a $p=p_0$ sur les deux bords $\to \alpha = 0$ et $p(x)=p_0$ donc $V_x(y)=ay+b = \dfrac{V_0}{H}y$.
+
+
+\section{Résolution approchée de problèmes de MMC}
+$\to$ méthode utilisée très souvent, mais approchée (erreurs).
+
+\subsection{Méthode des différences finies}
+Très utilisée en mécanique des fluides.
+
+L'idée est de résoudre le problème aux dérivées partielles en approchant 
+\[\dfrac{\partial u}{\partial x} (x_n) \simeq \dfrac{u_{n+1} - u_n}{x_{n+1}-x_n}
+\]
+
+Toutes les méthodes commencent ainsi par transformer le modèle en cherchant la valeur (approchée) de la solution dans des points particuliers appelés \emph{nœuds}. 
+\bigskip
+
+La méthode des différences finies est donc très pratique pour les problèmes de mécanique des fluides car la géométrie est simple à représenter car le quadrillage doit être régulier dans toutes les directions.
+
+\subsection{Méthode des volumes finis}
+Également très utilisée en mécanique des fluides.
+
+Dans cette approche, les inconnus de ce problème sont les flux (thermiques, contraintes) transmis d'un bord à l'autre des surface (lignes en 2D). On va donc travailler en terme de débit/vitesse arrivant dans chaque élément du découpage.
+
+
+\subsection{Méthode des éléments finis}
+Utilisés en mécanique des solides.
+
+On discrétise la géométrie en un \emph{maillage}, les \emph{éléments} étant les sous-domaines du maillage, dans lequel on va calculer les valeurs à certains endroits appelés \emph{nœuds}. Le maillage est calculé par un mailleur (informatique), qui est un problème complexe car les éléments peuvent avoir une forme quelconque (triangles, quadrilatères, etc). On cherche ensuite la solution sous la forme
+\[u(M) = \sum_{\text{nœuds}} \underbrace{u_i}_{\text{inconnues}} \underbrace{\phi_i (M)}_{\substack{\text{fonction}\\\text{de forme}\\\text{(de base)}}}\]
+
+Où les fonctions de formes sont des polynômes de degré $n$ (donc continus) définis sur \emph{chaque élément} (par morceaux) valant 1 au nœud $i$ et 0 sur les autres nœuds.
+
+On stocke le maillage sous la forme de deux tableaux : les \emph{tables de connectivité}, associant les éléments à leurs nœuds et les nœuds à leur coordonnées.
+\bigskip
+
+Lorsque le polynôme est de degré 1, les $\phi$ des portion de droites $\to$ les dérivées sont constantes, ce qui se traduira par des approximations des flux. Les nœuds sont alors les coins des éléments.
+
+Lorsque le polynôme est de degré 2, on rajoute des nœuds de manière à fixer un condition supplémentaire ($\phi (x) = 0$) sur le polynôme (il doit valoir 0 sur tous les nœuds de l'élément).
+
+\paragraph{Remarque :} Vu que l'on travaille en 3D, le nombre de constantes à fixer pour la détermination des fonctions de base augmente très rapidement (et donc la puissance de calcul nécessaire au calcul) en $n^3$ par rapport au nombre de nœuds, et le nombre de nœuds en $p!$ par rapport au degrés du polynôme. Dans les logiciels actuels, on utilise le degré 1 ou 2, 3 au pire ; au-delà des problèmes de résolution existent. Le nombre de nœuds est égal au nombre de constantes nécessaire pour chaque fonction.
+
+Par exemple, un cube avec des polynômes de degré 1 possède $n^3$ éléments, $(n+1)^3$ nœuds et donc $3(n+1)^3$ degrés de liberté (ddl ou dof en anglais).
+
+
+Pour calculer les $u_i$, en mécanique des solides (élastiques), le problèmes est équivalent à minimiser une énergie potentielle $E_p(u)=E_d(u) + W(u)$, où $E_d = \dfrac{1}{2}\int \mathbb{K}.\epsilon (\vec{u}).\epsilon(\vec{u})$ est l'énergie de déformation et $W$ le travail. Le problèmes est alors de minimiser $E_p$ dans l'espace de dimension fini des nœuds.
+
+On peut écrire 
+\[u=\begin{pmatrix}
+\phi_1 & \phi_2 & \hdots & \phi_N
+\end{pmatrix}
+\cdot
+\underbrace{
+\begin{pmatrix}
+u_1\\
+u_2\\
+\vdots\\
+u_N
+\end{pmatrix}}_{= U}
+\]
+
+Et alors :
+\[E_p(U)=\dfrac{1}{2}\transpose U \mathbb{K} U - \transpose U E\]
+Où $E$ est le vecteur des efforts connus et $K$ la matrice de rigidité, elle aussi connue.
+
+On se retrouve (après dérivation pour minimiser) avec le problème 
+\[\mathbb{K}.U=F\]
+
+Pour la résolution du $\mathbb{K}.U=F$ (décomposition de domaine), on peut utiliser des méthodes directes (si $n$ n'est pas trop grande, $< 1000$ ddl) ou itératives\footnote{Cf cours de MPNA}
+
+\paragraph{Propriétés de $\mathbb{K}$} Inversible (sauf s'il y a des mouvement de solides rigides) et symétriques, ce qui permet de simplifier les calculs. Elle est également creuse (les différents coefficients sont le produit de dérivées des $\phi_i$ localisées qui n'ont donc pas souvent un support commun), ce qui est très intéressant pour le stockage et l'inversion.
+
+\subsection{Et bien d'autres}
+Méthodes spectrales, ...
 
 
 \end{document}

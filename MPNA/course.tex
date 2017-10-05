@@ -1,0 +1,93 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+\usepackage{caption}
+%\usepackage{pgfplots}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{footnote}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{multirow}
+\usepackage{amsfonts}
+\usepackage[boxed,linesnumbered,noend]{algorithm2e}
+\usepackage{qcircuit}
+\usepackage{enumitem}
+\usepackage{eurosym}
+
+\newtheorem{thm}{Theorem}
+\newtheorem{prop}{Propriety}
+\newtheorem{lemma}{Lemma}
+\newtheorem{defi}{Definition}
+\newtheorem{coro}{Corollary}
+
+
+
+\setlength{\oddsidemargin}{0pt}
+% Marge gauche sur pages impaires
+\setlength{\evensidemargin}{0pt}
+% Marge gauche sur pages paires
+\setlength{\textwidth}{470pt}
+% Largeur de la zone de texte 
+\setlength{\topmargin}{0pt}
+% Pas de marge en haut
+\setlength{\headheight}{13pt}
+% Haut de page
+\setlength{\headsep}{10pt}
+% Entre le haut de page et le texte
+\setlength{\footskip}{40pt}
+% Bas de page + séparation
+\setlength{\textheight}{630pt}
+% Hauteur de la zone de texte
+
+\title{Méthode et Pratiques Scientifiques}
+\author{Nahid Ehmad}
+\date{}
+
+\newcommand{\note}{\medskip\noindent\underline}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+
+\section{Introduction}
+\paragraph{Technique de regroupement}
+On cherche à partitionner les sommets $V$ d'un graphe $G=(V,E)$ dans un ensemble de clusters $S_k\subseteq V$ tel que $\bigcup_{k=1}^{p}S_k = V$. La modularité est une mesure de la qualité d'un partitionnement des noeuds dans les communauté. 
+\bigskip
+
+La plupart du temps, les solutions à ce problèmes sont NP-Complète : on les approxime par à l'aide d'algorithmes, qui sont principalement basées sur du calcul de valeurs propres. Ce dernier prend 90\% du temps total ! De plus, 90\% du temps passé dans le solveur s'effectue dans des multiplications (sparse) matrice-vecteur .
+
+\subsection{Principaux éléments}
+\begin{itemize}
+\item Méthode itératives pour problèmes de grande taille
+\item Méthodes hybride synchrone/asynchrone
+\item Méthode numériques d'algèbre linéaire pour le traitement de masses de données (simulation de phénomènes physiques, analyse des réseaux sociaux, etc)
+\item Méthode de compression des structures creuses
+\item Modèles de programmation de graphe de Tâches, PGAS
+\item Métriques de performances
+\end{itemize}
+
+\paragraph{Quelques rappels inutiles sur la méthode de Gauss}
+
+\paragraph{Méthode directe vs Itérative} Une méthode directe est une solution dont la solution peut être calculée avec un nombre fini d'opérations arithmétiques élémentaires. A contrario, une méthode itératives est un procédé qui part d'une information initiale arbitraire et renvoie un résultat approché. Pour cela, on réinjecte le résultat en entrée de l'algorithme afin de raffiner la solution.
+
+\paragraph{Exemple} Pour trouver les valeurs propres d'une matrice, il faut trouver les racines du polynôme caractéristique, ce qui est impossible dès que le polynôme dépasse le degrés 4 : on n'utilise donc jamais une résolution directe.
+\bigskip
+
+La plupart du temps, les matrices sont creuses : on n'utilise donc pas les mêmes méthodes, plus particulièrement pas de méthodes directes car celle-ci ne sont pas adaptées.
+\bigskip
+
+Une des problématiques de nos jours est la consommation électrique. La nouvelle frontière du \emph{calcul exascale} impose des consommations énormes. La machine la plus puissante au 11/16 consommait plus de 15MW !
+
+
+
+\end{document}

@@ -357,4 +357,45 @@ Il faut bien entendu penser à la documentation : \url{google.fr} et les pages \
 \item Soutenance
 \item Le projet compte pour le moitié de la note finale
 \end{itemize}
+
+
+\section{Programmation parallèle : MPI et OpenMP}
+Pour augmenter la puissance de calcul, les constructeurs réalisent des machines parallèles ; ce qui nécessite d'adapter les algorithmes.
+
+MPI est une définition de fonctions permettant le passage de messages entres unités de calculs. A l'inverse, OpenMP permet de répartir une charge de travail sur plusieurs unités de calcul à la condition que les ressources ne soient pas utilisées en même temps.
+
+
+\paragraph{Hybridation}
+C'est le processus qui consiste à utiliser OpenMP dans des des processus communiquant par MPI. On va faire voyager les données entre processus via MPI alors que via OpenMP, les processus accèdent directement aux données via OpenMP. Une utilisation classique consiste à utiliser MPI pour synchroniser sur le noeuds SMT (symetric multi-processing) et utiliser OpenMP pour gérer la charge de travail au sein de ses noeuds.
+
+On notera qu'OpenMP est moins scalable du fait du parallélisme implicite.
+\bigskip
+
+Un exemple classique consiste à mettre un processus MPI par noeud SMP du cluster, chaque processus lance un thread sur chacun des noeds SMP. Il faut faire attention à ce que les messages envoyés par MPI dans un thread OpenMP identifient clairement leur expéditeur de manière a garder une organisation cohérente des données.
+
+\paragraph{Objectif} Minimiser le temps de passage de message par rapport au temps de calcul afin d'améliorer au maximum la scalabilité. Introduire des directives OpenMP dans une appli MPI est moins perforant que l'inverse, mais bien plus simple. Le meilleur moyen de gagner un maximum de performances consiste à réécrire totalement l'application ; mais heureusement le code est souvent réutilisable. De nombreuses autres possibilités de parallélisation existent, mais elles ne seront pas détaillées ici, par exemple GASNet, OpenSHMEM, GPI.
+
+\subsection{OpenMP}
+La macro \texttt{\#pragma omp parallel for} permet de répartir un boucle \texttt{for} sans dépendance sur plusieurs threads.h. OpenMP est assez simple à utiliser pour faire des choses simples, mais beaucoup moins pour des choses complexes\footnote{Comme \LaTeX \, en fait}.
+
+\subsection{Modèle (F)PGAS}
+Partitionned Global Adress Space : Modèle de programmation dans lequel la mémoire centrale est partitionnée pour chaque thread, exploitant ainsi la localité des données.
+La mémoire est divisée en deux partie : un partie partagée entre processus, et une partie locale. Il est donc possible d'avoir trois accès différents :
+\begin{itemize}
+\item Accès à la mémoire non partagée (locale)
+\item Accès à la mémoire partagée locale
+\item Accès à la mémoire partagée distante
+\end{itemize}
+
+
+Il existe UPC (Universal Parallel C) qui est une extension du C permettant de gérer la mémoire partagée ou locale de manière transparente. D'autres librairies existent : CAF (Co-Array Fortran), X10 (Java), Chapel (un nouveau langage) et XcalableMP (pragma ajouté à C/C++/Fortran).
+
+
+
+
+
+
+
+
+
 \end{document}

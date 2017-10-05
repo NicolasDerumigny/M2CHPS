@@ -28,9 +28,10 @@
 \newtheorem{defi}{Definition}
 \newtheorem{coro}{Corollary}
 
-\SetKwBlock{Label}{}{}%
-\SetKwRepeat{Do}{do}{while}%
-\SetKwProg{Void}{void}{}%
+\SetKwBlock{Label}{}{}
+\SetKwRepeat{Do}{do}{while}
+\SetKwBlock{Void}{void}{}
+\SetKwBlock{Struct}{struct}{}
 
 \setlength{\oddsidemargin}{0pt}
 % Marge gauche sur pages impaires
@@ -70,7 +71,7 @@ Technique d'optimisation bas niveau (ASM) sur des architectures de "petits multi
 \paragraph{Attention} Les transparents n'ont pas été modifiés depuis 7 ans : ne pas trop s'y fier (50\% d'information données ne sont plus dans les slides en fait).
 
 \section{Introduction}
-Depuis une dizaine d'année, les appareils informatiques ont complètement changé (tour moche en plastiques...). D'un côté l'informatique embarqué (téléphones, voitures, trains, ...) s'est développée, avec peu de ressources de calcul $\to$ modèle du \emph{mainframe} : serveur/terminaux. Les centres de données sont désormais propulsé par des architectures multicoeurs (le dégagement thermique augmente avec le carré de la fréquence, on augmente donc le nombre de coeurs car l'augmentation est linéaire avec la consommation). La loi de Moore restant toujours possible (miniaturisation des transistors), on intègre des clusters de machine complet sur un die.
+Depuis une dizaine d'année, les appareils informatiques ont complètement changé (bepuis les tours laides en plastiques...). D'un côté l'informatique embarqué (téléphones, voitures, trains, ...) s'est développée, avec peu de ressources de calcul $\to$ modèle du \emph{mainframe} : serveur/terminaux. Les centres de données sont désormais propulsés par des architectures multicoeurs (le dégagement thermique augmente avec le carré de la fréquence, on augmente donc le nombre de coeurs car l'augmentation est linéaire avec la consommation). La loi de Moore restant toujours possible (miniaturisation des transistors), on intègre des clusters de machine complet sur un die.
 
 De nos jours, pour gagner des performances, il faut augmenter le parallélisme, ce qui est difficile. Nous allons bien entendu travailler dessus, ainsi que sur le placement (caches).
 
@@ -271,7 +272,7 @@ D'un point de vu théorique, $atomic-CAS$ à la puissance du consensus (si on vo
 
 \paragraph{Exemple} \texttt{add} atomic en obstruction-free en utilisant \texttt{atomic-CAS}:\\
 \begin{algorithm}[H]
-\Void{add (int* x, int a)}{
+\Void({add (int* x, int a)}){
 	int old, new\;
 	\Do{atomic-CAS(x, old, new)}{
 	old = *x\;
@@ -285,26 +286,26 @@ Locking mechanism in Linux: ticket-lock\\
 \begin{algorithm}[H]
 int ticket\;
 int billet\;
-\Void{lock()}{
+\Void({lock()}){
 	int billet = atomic-add(\&ticket,1)\;
 	\While{guichet$<$billet}{
 		wait()\;
 	}
 }
 
-\Void{unlock()}{
+\Void({unlock()}){
 	atomic-add(\&guichet,1)\;
 }
 \end{algorithm}
 
 Noter que \texttt{atomic-CAS} est un lock en lui-même, appelé \texttt{spinlock}.
 \begin{algorithm}
-\Void{lock()}{
+\Void({lock()}){
 	\While{CAS(\&l, 0, 1) == 1}{
 		wait()\;
 	}
 }
-\Void{unlock()}{
+\Void({unlock()}){
 	l=0\;
 }
 \end{algorithm}
@@ -389,7 +390,7 @@ Structure \emph{LIFO} : Last In First Out. La pile possède deux méthodes : \te
 \paragraph{Sans lock :} L'idée est de faire un \texttt{atomic-CAS} sur le pointeur de tête.
 
 \begin{algorithm}[H]
-\Void{push(head, element)}{
+\Void({push(head, element)}){
 	\Do{\texttt{atomic-CAS(\&head, n.next, n) != n.next}}{
 		Node n = new Node (head, element)\;
 	}
@@ -403,7 +404,7 @@ Le principe est la même pour \texttt{pop}
 
 
 \begin{algorithm}[H]
-\Void{pop(head)}{
+\Void({pop(head)}){
 	\Do{\texttt{atomic-CAS(\&head, n, n.next) != n}}{
 		Node n = head\;
 	}
@@ -424,7 +425,7 @@ Pour gérer ces cas embêtants, on rajout un faux noeud (la list ne peut plus ê
 \end{itemize}
 
 \begin{algorithm}[H]
-\Void{enqueue(Element e)}{
+\Void({enqueue(Element e)}){
 	Node node = new Node (null, e)\;
 	\Do{CAS(\&old.next, null, node) != node}{
 		Node old = tail\;
@@ -452,32 +453,32 @@ Les invariants seront alors :
 \end{itemize}
 
 \begin{algorithm}[H]
-\Void{del(coloredPointer* plist, int value)}{
+\Void({del(coloredPointer* plist, int value)}){
 	\Label(restart :){
 		coloredPointer* pred = plist\;
 		
 		
 		\While{!found}{
-			Node cur = pointer(*pred)\;
+			Node curr = pointer(*pred)\;
 			
-			\If{cur == null $||$ value < cur$\to$value}{
+			\If{curr == null $||$ value < curr$\to$value}{
 				\tcp{pas trouvé}
 				return\;
 			}			
 			
 			
 		
-			\If{cur $\to$ value == value}{
+			\If{curr $\to$ value == value}{
 				\tcp{trouvé}
 				\Do{CAS(\&cur$\to$next, n, n $|$ 1) != n}{
-					n$\to$ cur $\to$ next\;
+					n = curr $\to$ next\;
 				}
 			}		
 		
 		
-			\If{mark(cur$\to$mext)}{
-				\tcc{cur doit être supprimé}
-				\eIf{CAS(pred, curr, pointer(cur$\to$next)) != cur}{
+			\If{mark(curr$\to$mext)}{
+				\tcc{curr doit être supprimé}
+				\eIf{CAS(pred, curr, pointer(curr$\to$next)) != cur}{
 					goto restart\;
 					\tcp{On est allé trop loin dans la liste}
 				}{
@@ -487,7 +488,7 @@ Les invariants seront alors :
 			
 			
 			
-			pred = \&cur$\to$next\;
+			pred = \&curr$\to$next\;
 		}
 	}
 }
@@ -500,16 +501,16 @@ Ajout :
 
 
 \begin{algorithm}[H]
-\Void{add(coloredPointer* plist, int value)}{
+\Void({add(coloredPointer* plist, int value)}){
 	\Label(restart :){
 		coloredPointer* pred = plist\;
 		
 		
 		\While{!found}{
-			Node cur = pointer(*pred)\;
+			Node curr = pointer(*pred)\;
 			
-			 \If{cur == null $||$ value < cur $\to$ value}{
-			 	\eIf{CAS(pred, cur, new Node(cur, value)) != cur}{
+			 \If{curr == null $||$ value < curr $\to$ value}{
+			 	\eIf{CAS(pred, curr, new Node(curr, value)) != curr}{
 			 		goto restart\;
 			 	}{
 					return\;			 	
@@ -517,9 +518,9 @@ Ajout :
 			 }
 		
 		
-			\If{mark(cur$\to$mext)}{
-				\tcc{cur doit être supprimé}
-				\eIf{CAS(pred, curr, pointer(cur$\to$next)) != cur}{
+			\If{mark(curr$\to$mext)}{
+				\tcc{curr doit être supprimé}
+				\eIf{CAS(pred, curr, pointer(curr$\to$next)) != cur}{
 					goto restart\;
 					\tcp{On est allé trop loin dans la liste}
 				}{
@@ -529,7 +530,7 @@ Ajout :
 			
 			
 			
-			pred = \&cur$\to$next\;
+			pred = \&curr$\to$next\;
 		}
 	}
 }
@@ -539,5 +540,20 @@ Ajout :
 
 L'algorithme est obstruction-free et lock-free mais pas wait-free.
 
+\subsubsection*{Implémentation}
+\begin{algorithm}[H]
+\Struct(node){
+	struct node* next\;
+	int value\;
+}
+\Struct(colorPtr){
+	uintptr\_t ptr:63\tcp{indique que l'on prends 63 bit}
+	uintptr\_t color:1\;
+}
+\end{algorithm}
+On se force à utiliser des structures sur 64 bits car le CAS utilise des structures 64 bits.
+\bigskip
+
+Pour l'implémentation, procéder par étape : d'abord le parcours, puis chaque cas un à un.
 
 \end{document}

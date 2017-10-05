@@ -221,3 +221,6 @@ TSWLatexianTemp*
 
 # binary files
 *.o
+
+# English course is not shared
+English/
