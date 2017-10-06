@@ -1,0 +1,24 @@
+---
+title: "Etude de cas : Boston est trucmachin"
+author: "Nicolas Derumigny et Anton Daumen"
+date: "6 Novembre 2017"
+output: html_document
+---
+## Introduction
+```{r setup, include=FALSE}
+library(ggplot2)
+N=100
+X = runif(N)
+df = data.frame(x=X,y=10*X+runif(N,min=-2, max=2))
+plot(df)
+
+```
+
+
+```{r}
+reg=lm(data=df, y~x)
+par(mfrow=c(2,2))
+plot(reg)
+summary(reg)
+par(mfrow=c(1,1))
+```
