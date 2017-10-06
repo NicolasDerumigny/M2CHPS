@@ -65,9 +65,9 @@ plt_age <- ggplot(data=Boston, aes(x=age, y=crim))  + geom_point(color='blue')
 multiplot(plt_nox, plt_pupil, plt_lstat, plt_age, cols=2)
 ```
 
-## Regression lineaire Univarié
+## Regression Lineaire Univariée
 
-```{r, fig.align='center'}
+```{r, echo=FALSE,  fig.align='center'}
 plt_nox_1 <- ggplot(data=Boston, aes(x=nox, y=crim))  +
   geom_point(color='blue') +
   geom_smooth(method = "lm", color='red')
@@ -84,8 +84,31 @@ plt_age_1 <- ggplot(data=Boston, aes(x=age, y=crim))  +
   geom_point(color='blue') +
   geom_smooth(method = "lm", color='red')
 
-multiplot(plt_nox, plt_pupil, plt_poor, plt_age, cols=2)
+multiplot(plt_nox_1, plt_pupil_1, plt_poor_1, plt_age_1, cols=2)
 ```
+
+## Regression Polynomiale Univariée
+
+```{r, echo=FALSE,  fig.align='center'}
+plt_nox_1 <- ggplot(data=Boston, aes(x=nox, y=crim))  +
+  geom_point(color='blue') +
+  geom_smooth(method = "lm", color='red', formula = y ~ x + I(x^2))
+
+plt_pupil_1 <- ggplot(data=Boston, aes(x=ptratio, y=crim))  +
+  geom_point(color='blue') +
+  geom_smooth(method = "lm", color='red', formula = y ~ x + I(x^2))
+
+plt_poor_1 <- ggplot(data=Boston, aes(x=lstat, y=crim))  +
+  geom_point(color='blue') +
+  geom_smooth(method = "lm", color='red', formula = y ~ x + I(x^2))
+
+plt_age_1 <- ggplot(data=Boston, aes(x=age, y=crim))  +
+  geom_point(color='blue') +
+  geom_smooth(method = "lm", color='red', formula = y ~ x + I(x^2))
+
+multiplot(plt_nox_1, plt_pupil_1, plt_poor_1, plt_age_1, cols=2)
+```
+
 
 
 ## Regression Linéaire Multivariée
