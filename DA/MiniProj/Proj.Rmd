@@ -56,17 +56,17 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 ## Premier affichage des données sélectionnées
 
-```{r, fig.align="center"}
-plt_nox <- ggplot(data=Boston, aes(x=nox, y=crim))  + geom_point()
-plt_pupil <- ggplot(data=Boston, aes(x=ptratio, y=crim))  + geom_point()
-plt_lstat <- ggplot(data=Boston, aes(x=lstat, y=crim))  + geom_point()
-plt_age <- ggplot(data=Boston, aes(x=age, y=crim))  + geom_point()
+```{r, echo=FALSE, fig.align="center"}
+plt_nox <- ggplot(data=Boston, aes(x=nox, y=crim))  + geom_point(color='blue')
+plt_pupil <- ggplot(data=Boston, aes(x=ptratio, y=crim))  + geom_point(color='blue')
+plt_lstat <- ggplot(data=Boston, aes(x=lstat, y=crim))  + geom_point(color='blue')
+plt_age <- ggplot(data=Boston, aes(x=age, y=crim))  + geom_point(color='blue')
 
 multiplot(plt_nox, plt_pupil, plt_lstat, plt_age, cols=2)
 ```
 
 ## Regression Linéaire Multivariée
-```{r, include=FALSE}
+```{r, echo=FALSE}
 ggplotRegression <- function (fit) {
 
 require(ggplot2)
@@ -83,7 +83,10 @@ ggplot(fit$model, aes_string(x = names(fit$model)[2], y = names(fit$model)[1])) 
 
 ```{r, fig.align="center"}
 first_model <- lm(crim ~ nox + ptratio + lstat + age, data=Boston)
+summary(first_model)
+```
 
+```{r, echo=FALSE, fig.align="center"}
 predicted <- data.frame(crime_nox = predict(first_model, Boston), nox=Boston$nox, ptratio=Boston$ptratio, lstat=Boston$lstat, age = Boston$age)
 
 plt_nox <- ggplot(data=Boston, aes(x=nox, y=crim)) + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=nox))
@@ -96,7 +99,10 @@ multiplot(plt_nox, plt_pupil, plt_lstat, plt_age, cols=2)
 ## Regression Polynomiale Multivariée
 ```{r, fig.align="center"}
 snd_model <- lm(crim ~ nox + I(nox^2) + ptratio + I(ptratio^2) + lstat + I(lstat^2) + age + I(age^2), data=Boston)
+summary(snd_model)
+```
 
+```{r, echo= FALSE, fig.align="center"}
 predicted <- data.frame(crime_nox = predict(snd_model, Boston), nox=Boston$nox, ptratio=Boston$ptratio, lstat=Boston$lstat, age = Boston$age)
 
 plt_nox <- ggplot(data=Boston, aes(x=nox, y=crim)) + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=nox))
