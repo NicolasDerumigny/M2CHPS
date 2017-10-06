@@ -65,6 +65,29 @@ plt_age <- ggplot(data=Boston, aes(x=age, y=crim))  + geom_point(color='blue')
 multiplot(plt_nox, plt_pupil, plt_lstat, plt_age, cols=2)
 ```
 
+## Regression lineaire Univarié
+
+```{r, fig.align='center'}
+plt_nox_1 <- ggplot(data=Boston, aes(x=nox, y=crim))  +
+  geom_point(color='blue') +
+  geom_smooth(method = "lm", color='red')
+
+plt_pupil_1 <- ggplot(data=Boston, aes(x=ptratio, y=crim))  +
+  geom_point(color='blue') +
+  geom_smooth(method = "lm", color='red')
+
+plt_poor_1 <- ggplot(data=Boston, aes(x=lstat, y=crim))  +
+  geom_point(color='blue') +
+  geom_smooth(method = "lm", color='red')
+
+plt_age_1 <- ggplot(data=Boston, aes(x=age, y=crim))  +
+  geom_point(color='blue') +
+  geom_smooth(method = "lm", color='red')
+
+multiplot(plt_nox, plt_pupil, plt_poor, plt_age, cols=2)
+```
+
+
 ## Regression Linéaire Multivariée
 ```{r, echo=FALSE}
 ggplotRegression <- function (fit) {
