@@ -1,8 +1,11 @@
 ---
-title: "Etude de cas : Explication des crimes à Boston et ses envrions"
+title: "Etude de cas : Explication des crimes à Boston et ses environs"
 author: "Nicolas Derumigny et Anton Daumen"
 date: "6 Novembre 2017"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
 ---
 ```{r setup, include=FALSE}
 library(MASS)
@@ -65,7 +68,7 @@ plt_age <- ggplot(data=Boston, aes(x=age, y=crim))  + geom_point(color='blue')
 multiplot(plt_nox, plt_pupil, plt_lstat, plt_age, cols=2)
 ```
 
-## Regression Lineaire Univariée
+## Regression Linéaire Univariée
 
 ```{r, echo=FALSE,  fig.align='center'}
 plt_nox_1 <- ggplot(data=Boston, aes(x=nox, y=crim))  +
@@ -87,7 +90,7 @@ plt_age_1 <- ggplot(data=Boston, aes(x=age, y=crim))  +
 multiplot(plt_nox_1, plt_pupil_1, plt_poor_1, plt_age_1, cols=2)
 ```
 
-## Regression Polynomiale Univariée
+## Régression Polynomiale Univariée
 
 ```{r, echo=FALSE,  fig.align='center'}
 plt_nox_1 <- ggplot(data=Boston, aes(x=nox, y=crim))  +
@@ -111,7 +114,7 @@ multiplot(plt_nox_1, plt_pupil_1, plt_poor_1, plt_age_1, cols=2)
 
 
 
-## Regression Linéaire Multivariée
+## Régression Linéaire Multivariée
 ```{r, echo=FALSE}
 ggplotRegression <- function (fit) {
 
@@ -127,7 +130,7 @@ ggplot(fit$model, aes_string(x = names(fit$model)[2], y = names(fit$model)[1])) 
 }
 ```
 
-```{r, fig.align="center"}
+```{r, fig.align="center",  echo= FALSE}
 first_model <- lm(crim ~ nox + ptratio + lstat + age, data=Boston)
 summary(first_model)
 ```
@@ -142,8 +145,8 @@ plt_age <- ggplot(data=Boston, aes(x=age, y=crim))  + geom_point(color="blue")+ 
 multiplot(plt_nox, plt_pupil, plt_lstat, plt_age, cols=2)
 ```
 
-## Regression Polynomiale Multivariée
-```{r, fig.align="center"}
+## Régression Polynomiale Multivariée
+```{r, fig.align="center",  echo= FALSE}
 snd_model <- lm(crim ~ nox + I(nox^2) + ptratio + I(ptratio^2) + lstat + I(lstat^2) + age + I(age^2), data=Boston)
 summary(snd_model)
 ```
