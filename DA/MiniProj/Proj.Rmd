@@ -1,10 +1,9 @@
 ---
-title: "Etude de cas : Boston est trucmachin"
+title: "Etude de cas : Explication des crimes à Boston et ses envrions"
 author: "Nicolas Derumigny et Anton Daumen"
 date: "6 Novembre 2017"
 output: html_document
 ---
-## Introduction
 ```{r setup, include=FALSE}
 library(MASS)
 library(ggplot2)
@@ -55,14 +54,54 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 ```
 
-## Affichage Graphique
+## Premier affichage des données sélectionnées
 
-```{r}
+```{r, fig.align="center"}
 plt_nox <- ggplot(data=Boston, aes(x=nox, y=crim))  + geom_point()
 plt_pupil <- ggplot(data=Boston, aes(x=ptratio, y=crim))  + geom_point()
+plt_lstat <- ggplot(data=Boston, aes(x=lstat, y=crim))  + geom_point()
+plt_age <- ggplot(data=Boston, aes(x=age, y=crim))  + geom_point()
 
-multiplot(plt_nox, plt_pupil, cols=2)
-#lm( , data=boston.c)
+multiplot(plt_nox, plt_pupil, plt_lstat, plt_age, cols=2)
 ```
 
-## Regression
+## Regression Linéaire Multivariée
+```{r, include=FALSE}
+ggplotRegression <- function (fit) {
+
+require(ggplot2)
+
+ggplot(fit$model, aes_string(x = names(fit$model)[2], y = names(fit$model)[1])) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "red") +
+  labs(title = paste("Adj R2 = ",signif(summary(fit)$adj.r.squared, 5),
+                     "Intercept =",signif(fit$coef[[1]],5 ),
+                     " Slope =",signif(fit$coef[[2]], 5),
+                     " P =",signif(summary(fit)$coef[2,4], 5)))
+}
+```
+
+```{r, fig.align="center"}
+first_model <- lm(crim ~ nox + ptratio + lstat + age, data=Boston)
+
+predicted <- data.frame(crime_nox = predict(first_model, Boston), nox=Boston$nox, ptratio=Boston$ptratio, lstat=Boston$lstat, age = Boston$age)
+
+plt_nox <- ggplot(data=Boston, aes(x=nox, y=crim)) + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=nox))
+plt_pupil <- ggplot(data=Boston, aes(x=ptratio, y=crim))  + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=ptratio))
+plt_lstat <- ggplot(data=Boston, aes(x=lstat, y=crim))  + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=lstat))
+plt_age <- ggplot(data=Boston, aes(x=age, y=crim))  + geom_point(color="blue")+ geom_line(color="red", data = predicted, aes(y=crime_nox, x=age))
+multiplot(plt_nox, plt_pupil, plt_lstat, plt_age, cols=2)
+```
+
+## Regression Polynomiale Multivariée
+```{r, fig.align="center"}
+snd_model <- lm(crim ~ nox + I(nox^2) + ptratio + I(ptratio^2) + lstat + I(lstat^2) + age + I(age^2), data=Boston)
+
+predicted <- data.frame(crime_nox = predict(snd_model, Boston), nox=Boston$nox, ptratio=Boston$ptratio, lstat=Boston$lstat, age = Boston$age)
+
+plt_nox <- ggplot(data=Boston, aes(x=nox, y=crim)) + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=nox))
+plt_pupil <- ggplot(data=Boston, aes(x=ptratio, y=crim))  + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=ptratio))
+plt_lstat <- ggplot(data=Boston, aes(x=lstat, y=crim))  + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=lstat))
+plt_age <- ggplot(data=Boston, aes(x=age, y=crim))  + geom_point(color="blue")+ geom_line(color="red", data = predicted, aes(y=crime_nox, x=age))
+multiplot(plt_nox, plt_pupil, plt_lstat, plt_age, cols=2)
+```
