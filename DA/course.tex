@@ -12,6 +12,7 @@
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{graphicx}
+\usepackage{adjustbox}
 \usepackage{url}
 \usepackage{bbm}
 \usepackage{amssymb}
@@ -243,6 +244,20 @@ $\mathbb{P}(|X|>|t|)$ est une $p$-value.
 \end{defi}
 
 %TODO
+
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{c|c|c|c|c}
+Problème & Supervisé & Non Supervisé & Objectif & Critère\\
+\hline
+Régression & $Y\in \mathbb{R}$ & & $Y$ & Erreur de prédiction/Moindre carrées\\
+Classification & $Y\in \{0,1\}$ & & $Y$ & Erreur de prédiction / Taux d'erreur\\
+Clustering & & $X$, $Y$ non observé & $Y$ & pas de critère clair\\
+Scoring & $Y\in\{ 0, 1\}$ & & $Y$ & AUC, courbe Roc, courbes ROC, courbe Précision/Rappel\\
+\hline
+\end{tabular}
+\end{adjustbox}
+
 
 
 

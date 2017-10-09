@@ -556,4 +556,104 @@ On se force à utiliser des structures sur 64 bits car le CAS utilise des struct
 
 Pour l'implémentation, procéder par étape : d'abord le parcours, puis chaque cas un à un.
 
+
+
+\section{Mémoire Transactionnelle}
+\subsection{Pourquoi ?}
+Les algorithmes lock-free sont très difficiles à implémenter car théoriquement très difficile. Une solution intermédiaire consiste à dégrader quelque peu les performances (souvent plus rapide que le lock, mais légèrement plus lent que le lock-free), mais gagner une simplicité de programmation énorme.
+
+\paragraph{Rappel :} selon la loi d'Amdahl, le facteur prédominant est (en HPC) les quelques pourcents de code non parallélisable. Pour réduire au maximum la séquentialisation, on peut :
+\begin{itemize}
+\item Utiliser des lock plus nombreux (verrou à grain fin)
+\item Utiliser des compare-and-swap
+\end{itemize}
+Statistiquement, la probabilité de conflit est assez faible, on va donc essayer de supprimer les verrous.
+En effet, les verrous fins sont :
+\begin{itemize}
+\item Difficile à maintenir (\emph{très très important en HPC})
+\item Difficilement débogable
+\item Difficilement prouvable
+\item Difficile à composer (quasi impossible)
+\item Effet de bord important : protocole d'accès à une variable implicite (pour accéder à telle variable je dois faire telle chose avant
+\end{itemize}
+
+En outre, le verrouillage fin reste très pessimiste. L'idée des mémoires transactionnelles est de faire du verrouillage optimiste. On veut garder \emph{l'atomicité} des sections critiques ($\to$ pas d'intermédiaires vu par les autres threads). On va donc laisser les threads s'exécuter en parallèles, mais revenir à un état antérieur en cas de problème.
+
+On s'attend alors à :
+\begin{itemize}
+\item simplifier le code : pas besoin de connaître l'ordre des verrous
+\item non-deadlock, non-famine, composabilité assurée par la plate-forme
+\item on ne bloque un coeur que si c'est nécessaire (i.e. car conflit)
+\end{itemize}
+
+Dans la pratique, cela est faux. Parfois on gagne, parfois on perd par rapport à un verrouillage à grain fin, mais on reste plus performant qu'un unique verrou (et moins qu'un lock-free).
+
+\begin{defi}[Bloc atomique]
+Un bloc atomique est exécuté de façon atomique. Cela signifie qu'il semble s'exécuter instantanément aux yeux des autres threads.
+\end{defi}
+
+Dans ce cas, la programmation devient bien plus simple ; la composition de block atomique est bien plus simple. Le mot-clef \texttt{retry} permet de mettre le thread en attente et de retenter la section transactionnelle lorsqu'une des variables lue avant le retry est modifiée. On peut alors utiliser \texttt{orElse} qui permet d'exécuter une autre section en cas d'avortement de la transaction.
+
+
+\subsection{Mise en oeuvre}
+Il existe deux types de mémoire transactionnelle :
+\begin{enumerate}
+\item Mémoire transactionnelle retardée (\emph{deferred-update}) :
+\begin{itemize}
+\item Écriture dans une copie locale, propagée en mémoire centrale au commit
+\item Dédouble les écritures mémoires ($\to$ inutile lorsqu'il y a peu de confilts)
+\item Cohérence facile à maintenir
+\end{itemize}
+\item Mémoire transactionnelle immédiate (\emph{direct-update}) :
+\begin{itemize}
+\item Écriture directement dans la mémoire centrale, annulation si la transaction avorte
+\item Très peu de travail au commit
+\item Cohérence plus difficile à maintenir (doit garder les valeurs originales si la transaction avorte).
+\end{itemize}
+\end{enumerate}
+\bigskip
+
+
+Pour la détection de conflits : un conflit arrive lorsque deux threads travaillent en lecture/écriture sur la même variable. Dans le cas d'un conflit lecteur/écrivain, il faut annuler une des deux transactions (une bonne heuristique est de laisser commit le premier arrivé et d'avorter les autre). Dans le cas d'un conflit écrivain/écrivain, il est également nécessaire d'avorter une des deux transactions. Attention, il n'y a pas de conflit lecteur/lecteur.
+\medskip
+
+
+Deux systèmes de détection de conflit sont possible :
+\begin{itemize}
+\item Détection au plus tôt (\emph{eager)} : dès que le conflit est observé, on annule la transaction
+\item Détection au plus tard (\emph{lazy} : on regarde les conflits lors du commit
+\end{itemize}
+\medskip
+
+
+Trois manières différentes sont possibles pour construire une mémoire transactionnelle :
+\begin{itemize}
+\item Mémoire transactionnelle matérielle (HTM) : on garde les données dans le cache sans propager les écritures. Cela est donc bien plus rapide, mais ne convient pas pour les grandes/longues transactions. En effet, les transaction sont limitées au L1 ($\sim 64$ ko) ; les appels systèmes (interruptions matérielles) et switch de contextes avortent.
+\item Mémoire transactionnelle logicielle (STM) : On met une barrière en lecture/écriture inséré par le compilateur (ou à la main). C'est plus lent, mais on peut ainsi gérer des transactions de tailles quelconques.
+\item Mémoire transactionnelle hybride (HyTM) : On reste dans de la mémoire matérielle tant que le cache suffit (en cas de conflit à cause de la limite de taille), on passe en logiciel sinon.
+\end{itemize}
+
+\subsubsection*{Mise en œuvre logicielle}
+On peut utiliser une STM délayée au plus tard avec un verrou au commit.
+
+Principe :
+\begin{itemize}
+\item Chaque case mémoire possède un compteur
+\item Le compteur correspond à la dernière date d'accès (\emph{timestamp})
+\end{itemize}
+Il y a cependant un soucis : la \emph{transaction zombie}. On peut voir une transaction qui n'a pas été effectuée\footnote{C'est peut-être le problème ayant entrainé la désactivation du support HTM sur les CPU Intel Hasswell}. Si l'on lit une valeur qui a été modifiée entre temps, on peut lire une mauvaise valeur entrainant \emph{par structure} un arrêt du programme (par exemple \texttt{if (x != NULL) \{  x->f() \}} et \texttt{x} modifié à \texttt{NULL} entre temps). Le problème reste présent si l'on avorte avec la seule lecture du compteur à cause d'invariants du programmes (des garanties sémantiques de l'état mémoire inconnues du CPU). On peut imaginer modifier la valeur de deux valeurs \texttt{x} et \texttt{y} par un thread, et qu'un second thread lise l'ancienne valeur de \texttt{x} et la nouvelle de \texttt{y}, entrainant une division par 0 (ainsi la transaction n'arrive pas jusqu'au commit).
+
+On rajoute donc une horloge globale absolue partagée, elle donne le numéro de la transaction. Au début de la transaction, on copie l'horloge globale dans l'horloge locale.
+A chaque lecture, on vérifie que le compteur est strictement plus petit que l'horloge (sinon on annule), et on l'ajout au readset. A chaque écriture, on l'ajoute simplement au writeSet.
+Lors des commits, si un compteur RS ou WS \emph{distant} est plus grand que l'horloge \emph{locale}, on avorte. Pour toute variable, on met à jour son timestamp au compteur global et sa valeur ; puis on incrémente de timestamp global.
+\bigskip
+
+En TP : On considère
+\begin{itemize}
+\item La mémoire est un tableau de pointeurs vers des couples compteur/valeur
+\item Mise à jour systématique d'un pointeur complet et non d'un couple
+\item Un ramasse-miettes s'occupe de récupérer les vieux couples (jamais de libération explicite)
+\end{itemize}
+
+
 \end{document}

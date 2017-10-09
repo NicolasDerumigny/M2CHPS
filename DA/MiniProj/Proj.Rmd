@@ -10,6 +10,10 @@ output:
 ```{r setup, include=FALSE}
 library(MASS)
 library(ggplot2)
+Boston_n <- Boston
+Boston_n$nox <- Boston_n$nox/max(Boston_n$nox)*100
+Boston_n$ptratio <- Boston_n$ptratio/max(Boston_n$ptratio)*100
+Boston_n$lstat <- Boston_n$lstat/max(Boston_n$lstat)*100
 # Multiple plot function
 #
 # ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
@@ -58,12 +62,12 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 ```
 
 ## Premier affichage des données sélectionnées
-
+Les données sont toutes normalisées de manière à être entre 0 et 100. On s'intéresse au taux de criminalité mis en relation avec différentes variables : La pollution de l'air, la pauvreté, le nombre d'élève par professeur ainsi que la part de vieilles habitations.
 ```{r, echo=FALSE, fig.align="center"}
-plt_nox <- ggplot(data=Boston, aes(x=nox, y=crim))  + geom_point(color='blue')
-plt_pupil <- ggplot(data=Boston, aes(x=ptratio, y=crim))  + geom_point(color='blue')
-plt_lstat <- ggplot(data=Boston, aes(x=lstat, y=crim))  + geom_point(color='blue')
-plt_age <- ggplot(data=Boston, aes(x=age, y=crim))  + geom_point(color='blue')
+plt_nox <- ggplot(data=Boston_n, aes(x=nox, y=crim))  + geom_point(color='blue') + labs(x="Oxyde d'azote (en 10ppm)", y="Taux de criminalité (en %)")
+plt_pupil <- ggplot(data=Boston_n, aes(x=ptratio, y=crim))  + geom_point(color='blue')  + labs(x="Nombre moyen d'élèves par professeur", y="Taux de criminalité (en %)")
+plt_lstat <- ggplot(data=Boston_n, aes(x=lstat, y=crim))  + geom_point(color='blue') + labs(x="Taux d'habitants sous le seuil de pauvreté", y="Taux de criminalité (en %)")
+plt_age <- ggplot(data=Boston_n, aes(x=age, y=crim))  + geom_point(color='blue') + labs(x="Taux d'habitations datant d'avant 1940", y="Taux de criminalité (en %)")
 
 multiplot(plt_nox, plt_pupil, plt_lstat, plt_age, cols=2)
 ```
@@ -71,43 +75,43 @@ multiplot(plt_nox, plt_pupil, plt_lstat, plt_age, cols=2)
 ## Regression Linéaire Univariée
 
 ```{r, echo=FALSE,  fig.align='center'}
-plt_nox_1 <- ggplot(data=Boston, aes(x=nox, y=crim))  +
+plt_nox_1 <- ggplot(data=Boston_n, aes(x=nox, y=crim))  +
   geom_point(color='blue') +
-  geom_smooth(method = "lm", color='red')
+  geom_smooth(method = "lm", color='red') + labs(x="Oxyde d'azote (en 10ppm)", y="Taux de criminalité (en %)")
 
-plt_pupil_1 <- ggplot(data=Boston, aes(x=ptratio, y=crim))  +
+plt_pupil_1 <- ggplot(data=Boston_n, aes(x=ptratio, y=crim))  +
   geom_point(color='blue') +
-  geom_smooth(method = "lm", color='red')
+  geom_smooth(method = "lm", color='red') + labs(x="Nombre moyen d'élèves par professeur", y="Taux de criminalité (en %)")
 
-plt_poor_1 <- ggplot(data=Boston, aes(x=lstat, y=crim))  +
+plt_poor_1 <- ggplot(data=Boston_n, aes(x=lstat, y=crim))  +
   geom_point(color='blue') +
-  geom_smooth(method = "lm", color='red')
+  geom_smooth(method = "lm", color='red') + labs(x="Taux d'habitants sous le seuil de pauvreté", y="Taux de criminalité (en %)")
 
-plt_age_1 <- ggplot(data=Boston, aes(x=age, y=crim))  +
+plt_age_1 <- ggplot(data=Boston_n, aes(x=age, y=crim))  +
   geom_point(color='blue') +
-  geom_smooth(method = "lm", color='red')
+  geom_smooth(method = "lm", color='red') + labs(x="Taux d'habitations datant d'avant 1940", y="Taux de criminalité (en %)")
 
-multiplot(plt_nox_1, plt_pupil_1, plt_poor_1, plt_age_1, cols=2)
+multiplot(plt_nox_1, plt_pupil_1, plt_poor_1, plt_age_1, cols=2) 
 ```
 
 ## Régression Polynomiale Univariée
 
 ```{r, echo=FALSE,  fig.align='center'}
-plt_nox_1 <- ggplot(data=Boston, aes(x=nox, y=crim))  +
+plt_nox_1 <- ggplot(data=Boston_n, aes(x=nox, y=crim))  +
   geom_point(color='blue') +
-  geom_smooth(method = "lm", color='red', formula = y ~ x + I(x^2))
+  geom_smooth(method = "lm", color='red', formula = y ~ x + I(x^2)) + labs(x="Oxyde d'azote (en 10ppm)", y="Taux de criminalité (en %)")
 
-plt_pupil_1 <- ggplot(data=Boston, aes(x=ptratio, y=crim))  +
+plt_pupil_1 <- ggplot(data=Boston_n, aes(x=ptratio, y=crim))  +
   geom_point(color='blue') +
-  geom_smooth(method = "lm", color='red', formula = y ~ x + I(x^2))
+  geom_smooth(method = "lm", color='red', formula = y ~ x + I(x^2)) + labs(x="Nombre moyen d'élèves par professeur", y="Taux de criminalité (en %)")
 
-plt_poor_1 <- ggplot(data=Boston, aes(x=lstat, y=crim))  +
+plt_poor_1 <- ggplot(data=Boston_n, aes(x=lstat, y=crim))  +
   geom_point(color='blue') +
-  geom_smooth(method = "lm", color='red', formula = y ~ x + I(x^2))
+  geom_smooth(method = "lm", color='red', formula = y ~ x + I(x^2)) + labs(x="Taux d'habitants sous le seuil de pauvreté", y="Taux de criminalité (en %)")
 
-plt_age_1 <- ggplot(data=Boston, aes(x=age, y=crim))  +
+plt_age_1 <- ggplot(data=Boston_n, aes(x=age, y=crim))  +
   geom_point(color='blue') +
-  geom_smooth(method = "lm", color='red', formula = y ~ x + I(x^2))
+  geom_smooth(method = "lm", color='red', formula = y ~ x + I(x^2)) + labs(x="Taux d'habitations datant d'avant 1940", y="Taux de criminalité (en %)")
 
 multiplot(plt_nox_1, plt_pupil_1, plt_poor_1, plt_age_1, cols=2)
 ```
@@ -131,32 +135,32 @@ ggplot(fit$model, aes_string(x = names(fit$model)[2], y = names(fit$model)[1])) 
 ```
 
 ```{r, fig.align="center",  echo= FALSE}
-first_model <- lm(crim ~ nox + ptratio + lstat + age, data=Boston)
+first_model <- lm(crim ~ nox + ptratio + lstat + age, data=Boston_n)
 summary(first_model)
 ```
 
 ```{r, echo=FALSE, fig.align="center"}
-predicted <- data.frame(crime_nox = predict(first_model, Boston), nox=Boston$nox, ptratio=Boston$ptratio, lstat=Boston$lstat, age = Boston$age)
+predicted <- data.frame(crime_nox = predict(first_model, Boston_n), nox=Boston_n$nox, ptratio=Boston_n$ptratio, lstat=Boston_n$lstat, age = Boston_n$age)
 
-plt_nox <- ggplot(data=Boston, aes(x=nox, y=crim)) + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=nox))
-plt_pupil <- ggplot(data=Boston, aes(x=ptratio, y=crim))  + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=ptratio))
-plt_lstat <- ggplot(data=Boston, aes(x=lstat, y=crim))  + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=lstat))
-plt_age <- ggplot(data=Boston, aes(x=age, y=crim))  + geom_point(color="blue")+ geom_line(color="red", data = predicted, aes(y=crime_nox, x=age))
+plt_nox <- ggplot(data=Boston_n, aes(x=nox, y=crim)) + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=nox)) + labs(x="Oxyde d'azote (en 10ppm)", y="Taux de criminalité (en %)")
+plt_pupil <- ggplot(data=Boston_n, aes(x=ptratio, y=crim))  + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=ptratio)) + labs(x="Nombre moyen d'élèves par professeur", y="Taux de criminalité (en %)")
+plt_lstat <- ggplot(data=Boston_n, aes(x=lstat, y=crim))  + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=lstat)) + labs(x="Taux d'habitants sous le seuil de pauvreté", y="Taux de criminalité (en %)")
+plt_age <- ggplot(data=Boston_n, aes(x=age, y=crim))  + geom_point(color="blue")+ geom_line(color="red", data = predicted, aes(y=crime_nox, x=age)) + labs(x="Taux d'habitations datant d'avant 1940", y="Taux de criminalité (en %)")
 multiplot(plt_nox, plt_pupil, plt_lstat, plt_age, cols=2)
 ```
 
 ## Régression Polynomiale Multivariée
 ```{r, fig.align="center",  echo= FALSE}
-snd_model <- lm(crim ~ nox + I(nox^2) + ptratio + I(ptratio^2) + lstat + I(lstat^2) + age + I(age^2), data=Boston)
+snd_model <- lm(crim ~ nox + I(nox^2) + ptratio + I(ptratio^2) + lstat + I(lstat^2) + age + I(age^2), data=Boston_n)
 summary(snd_model)
 ```
 
 ```{r, echo= FALSE, fig.align="center"}
-predicted <- data.frame(crime_nox = predict(snd_model, Boston), nox=Boston$nox, ptratio=Boston$ptratio, lstat=Boston$lstat, age = Boston$age)
+predicted <- data.frame(crime_nox = predict(snd_model, Boston_n), nox=Boston_n$nox, ptratio=Boston_n$ptratio, lstat=Boston_n$lstat, age = Boston_n$age)
 
-plt_nox <- ggplot(data=Boston, aes(x=nox, y=crim)) + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=nox))
-plt_pupil <- ggplot(data=Boston, aes(x=ptratio, y=crim))  + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=ptratio))
-plt_lstat <- ggplot(data=Boston, aes(x=lstat, y=crim))  + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=lstat))
-plt_age <- ggplot(data=Boston, aes(x=age, y=crim))  + geom_point(color="blue")+ geom_line(color="red", data = predicted, aes(y=crime_nox, x=age))
+plt_nox <- ggplot(data=Boston_n, aes(x=nox, y=crim)) + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=nox)) + labs(x="Oxyde d'azote (en 10ppm)", y="Taux de criminalité (en %)")
+plt_pupil <- ggplot(data=Boston_n, aes(x=ptratio, y=crim))  + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=ptratio)) + labs(x="Nombre moyen d'élèves par professeur", y="Taux de criminalité (en %)")
+plt_lstat <- ggplot(data=Boston_n, aes(x=lstat, y=crim))  + geom_point(color="blue") + geom_line(color="red", data = predicted, aes(y=crime_nox, x=lstat)) + labs(x="Taux d'habitants sous le seuil de pauvreté", y="Taux de criminalité (en %)")
+plt_age <- ggplot(data=Boston_n, aes(x=age, y=crim))  + geom_point(color="blue")+ geom_line(color="red", data = predicted, aes(y=crime_nox, x=age)) + labs(x="Taux d'habitations datant d'avant 1940", y="Taux de criminalité (en %)")
 multiplot(plt_nox, plt_pupil, plt_lstat, plt_age, cols=2)
 ```
