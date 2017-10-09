@@ -56,12 +56,15 @@ void initMemory() {
 }
 
 void initThreads() {
+  // première mise à zéro des variables lues et écrites,
+  // les autres mises à zéro se font dans le commit
   memset(tx.readSet, 0, N);
   memset(tx.writeSet, 0, N);
 }
 
 void startTX(int nb_restart) {
   tx.clock = memory.clock;
+  //Si il y a eu un restart, alors on attend un peu avant de recommencer
   if (nb_restart == 0) {
     tx.backoff = 0;
   } else {
@@ -74,8 +77,8 @@ void startTX(int nb_restart) {
  *   ABORT: abort, other: ok
  */
 int writeValue(int idx, int value) {
-  tx.writeSet[idx]=1;
-  tx.writenValues[idx]=value;
+  tx.writeSet[idx]=1; //On a écrit dans l'id idx
+  tx.writenValues[idx]=value; //On l'écrit vraiment
   return 0;
 }
 
@@ -83,16 +86,16 @@ int writeValue(int idx, int value) {
  *   ABORT: abort, other: ok
  */
 int readValue(int idx) {
-  if (tx.writeSet[idx]) {
-    return tx.writenValues[idx];
-  } else {
-    struct value * val = memory.values[idx];
+  if (tx.writeSet[idx]) { //si il a déjà été écrit localement
+    return tx.writenValues[idx]; //on renvoit sa valeur
+  } else { //sinon
+    struct value * val = memory.values[idx]; //on prend ses informations en mémoire 
     if (val->counter >= tx.clock) {
-      return ABORT;
+      return ABORT; // Si il est plus récent que nous, stop
     }
 
     tx.readSet[idx]=1;
-    return val->value;
+    return val->value; //sinon, on l'a lu et on renvoit sa valeur
   }
 }
 
@@ -100,23 +103,24 @@ int readValue(int idx) {
  *   ABORT: abort, other: ok
  */
 int commitTX() {
-  char commit = 1;
-  int toWrite[N];
-  int nextWrite=0;
+  char commit = 1; // 1 si on commit, 0 sinon
+  int toWrite[N]; // Tableau des valeurs a mettre à jour
+  int nextWrite=0; //indice de toWrite sur lequel je suis en train d'écrire
   pthread_mutex_lock(&memory.lock);
   for(int i = 0; i<N; ++i) {
     if(tx.readSet[i]) {
       --tx.readSet[i];
       if (commit && memory.values[i]->counter >= tx.clock) {
-       --commit;
+       --commit; //on ne commit plus (commit = 0)
       }
     }
     if(tx.writeSet[i]){
       --tx.writeSet[i];
       if (commit){
-        toWrite[nextWrite++]=i;
+        toWrite[nextWrite++]=i; //on doit mettre à jour l'emplacement mémoire i
+        // donc toWrite contient i, et la prochaine valeur à mettre dans toWrite sera à la case nextWrite+1
         if (memory.values[i]->counter >= tx.clock) {
-          --commit;
+          --commit; //on ne commit plus (commit = 0)
         }
       }
     }
@@ -126,11 +130,11 @@ int commitTX() {
     return ABORT;
   }
 
-  for(int i = 0; i<nextWrite; ++i) {
-    memory.values[toWrite[i]]->counter = memory.clock;
-    memory.values[toWrite[i]]->value = tx.writenValues[toWrite[i]];
+  for(int i = 0; i<nextWrite; ++i) { //pour toutes les valeurs à mettre à jour
+    memory.values[toWrite[i]]->counter = memory.clock; //on commence par mettre l'horloge
+    memory.values[toWrite[i]]->value = tx.writenValues[toWrite[i]]; //puis la valeur
   }
-  ++memory.clock;
+  ++memory.clock; // une fois que tout es fait, j'augemente la mémoire centrale
 
   pthread_mutex_unlock(&memory.lock);
   return 0;
