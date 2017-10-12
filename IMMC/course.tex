@@ -35,7 +35,7 @@
 
 \newcommand{\deriv}{\mathrm{d}}
 \newcommand{\Deriv}{\mathrm{D}}
-\newcommand{\grad}{\mathrm{grad}\;}
+\newcommand{\grad}{\text{grad}\;}
 \newcommand{\transpose}{\hspace{.1em}{}^t\hspace{-.1em}}
 
 \setlength{\oddsidemargin}{0pt}
@@ -167,7 +167,7 @@ Le milieu évolue avec le temps, en chaque point du milieu on peut utiliser les 
 
 Deux visions existent : la vision \emph{Lagrangienne} et \emph{Eulérienne}.
 
-\subsubsection{Vision lagrangienne}
+\subsubsection{Vision Lagrangienne}
 La vision Lagrangienne est la plus utilisée par les solides, on étudie le mouvement du solide par rapport à sa position initiale déterminée appelée \emph{configuration de référence}. Elle consiste en la donnée pour tout temps et tout point $M_0$ du solide $\Omega$ de configuration initiale $\Omega_0$ la trajectoire $\overrightarrow{OM}_0(t)$.
 
 Tout est donnée par rapport à la position initiale. On suit chaque point, donc $\vec{a}=\dfrac{\deriv \vec{v}}{\deriv t}$
@@ -187,7 +187,7 @@ Cela signifie que la distance entre les points change. En vision lagrangienne, s
 On pose :
 \begin{align*}
 \overrightarrow{MN} & = \overrightarrow{ON} - \overrightarrow{OM}\\
-& = \underbrace{\overrightarrow{ON}(t,\overrightarrow{ON}_0}_{\vec{\Phi}(t,\overrightarrow{ON}_0)} - \underbrace{\overrightarrow{OM}(t,\overrightarrow{OM}_0}_{\vec{\Phi}(t,\overrightarrow{ON}_0}\\
+& = \underbrace{\overrightarrow{ON}(t,\overrightarrow{ON}_0)}_{\vec{\Phi}(t,\overrightarrow{ON}_0)} - \underbrace{\overrightarrow{OM}(t,\overrightarrow{OM}_0)}_{\vec{\Phi}(t,\overrightarrow{ON}_0)}\\
 & = \vec{\Phi}(t, \overrightarrow{OM}_0 + \overrightarrow{M_0N_0}) - \vec{\Phi}(t, \overrightarrow{OM}_0)\\
 & = \underbrace{\dfrac{\partial \vec{\Phi}}{\partial M_0}}_{= \mathbb{F}} (\overrightarrow{M_0N_0}) + ... \qquad \text{(développement limité)}
 \end{align*}
@@ -316,21 +316,21 @@ Ce qui est également physiquement cohérent : les angles (coefficients hors dia
 \end{enumerate}
 
 \subsubsection{Vision Lagrangienne}
-Outre $\mathbb{F}(t,M_0)$ et $\mathbb{E}(t, M_0)$, on introduit le \emph{déplacement} $\vec{u}$, défini par $\overrightarrow{OM}=\overrightarrow{OM_0}+\vec{u}$. On a alors $\mathbb{F}= \mathbb{I} + \grad_{| M_0} \vec{v}$
+Outre $\mathbb{F}(t,M_0)$ et $\mathbb{E}(t, M_0)$, on introduit le \emph{déplacement} $\vec{u}$, défini par $\overrightarrow{OM}=\overrightarrow{OM_0}+\vec{u}$. On a alors $\mathbb{F}= \mathbb{I} + \text{grad}_{| M_0} \vec{v}$
 
 Dans ce cas :
 \begin{align*}
 \mathbb{E} & = \dfrac{1}{2}[\mathbb{F}\transpose \mathbb{F} - \mathbb{I}]\\
-& = \dfrac{1}{2} \left[ \underbrace{(\mathbb{I} + \grad \vec{u})\transpose(\mathbb{I}+\grad \vec{v}) - \mathbb{I})}_{= \mathbb{I}+ \grad \vec{u} + \transpose \grad \vec{u} + \underbrace{\text{\sout{$\transpose \grad \vec{u}\grad \vec{u}$}}}_{\substack{\text{négligé pour les solides}\\\text{avec de petites déformations}}}} \right]\\
-& \simeq \underbrace{\dfrac{1}{2} \left[ \grad_{M_0} \vec{v} + \transpose \grad_{M_0} \vec{v} \right]}_{\varepsilon (\vec{u})\text{ déformation linéarisée}}\\
+& = \dfrac{1}{2} \left[ \underbrace{(\mathbb{I} + \grad \vec{u})\transpose(\mathbb{I}+\grad \vec{u}) - \mathbb{I})}_{= \mathbb{I}+ \grad \vec{u} + \transpose \grad \vec{u} + \underbrace{\text{\sout{$\transpose \grad \vec{u}\grad \vec{u}$}}}_{\substack{\text{négligé pour les solides}\\\text{avec de petites déformations}}}} \right]\\
+& \simeq \underbrace{\dfrac{1}{2} \left[ \text{grad}_{M_0} \vec{u} + \transpose \text{grad}_{M_0} \vec{u} \right]}_{\varepsilon (\vec{u})\text{ déformation linéarisée}}\\
 \end{align*}
 
 \paragraph{Note}
 $\mathbb{F}$,$\mathbb{E}$ et $\varepsilon$ sont des composants sans unité, de l'ordre de $10^{-6}$ à $10^{-3}$.
 
-\subsubsection{Vision eulérienne}
+\subsubsection{Vision Eulérienne}
 Pour avoir une idée de la déformation dans le milieu, on introduit
-\[\mathbb{D} = \dfrac{1}{2} \left[ \grad_M \vec{v} + \grad_M \vec{v} \right]\]
+\[\mathbb{D} = \dfrac{1}{2} \left[ \text{grad}_M \vec{v} + \transpose\text{grad}_M \vec{v} \right]\]
 Avec $\dfrac{\deriv  \overrightarrow{MN}}{\deriv t} = \mathbb{D} \cdot \overrightarrow{MN}$. $\mathbb{D}$ est appelé \emph{tenseur taux de déformation}, son unité est la $s^{-1}$.
 
 
@@ -392,13 +392,13 @@ Les coefficients diagonaux sont appelés \emph{contraintes principales} et la ba
 
 
 \subsection{Pression hydrostatique}
-Une bille dans l'eau : $\sigma = -p \mathbb{I}$
+Une bille dans l'eau : $\sigma = -p.\mathbb{I}$
 
 
 \paragraph{Ordre de grandeurs} $|| \sigma || \sim 100$ MPa
 
 
-\paragraph{Écrasement d'un solide entre deux plaques rigides} On suppose qu'il y a glissement sur la plaque du bas mais frottement dur la plaque supérieure.
+\paragraph{Écrasement d'un solide entre deux plaques rigides} On suppose qu'il y a glissement sur la plaque du bas mais frottement sur la plaque supérieure.
 \begin{figure}[!h]
 \centering
 \includegraphics[width=0.6\linewidth]{deux_plaques.eps}
@@ -434,7 +434,7 @@ Une surface élémentaire $\deriv S$ subit une force $\overrightarrow{\deriv F} 
 \begin{enumerate}
 \item (2.4 de la fiche) 
 Essai de traction dans une éprouvette d'essai de traction cylindrique de rayon $R$.\\
-Attention à bien orienter la normale en fonction de quelle matière effectue son effort sur qui (cela change le signe). Le chargement extérieur est $p_0 S_0 \vec{e}_1$, donc $\vec{T}(M,\vec{e}_1)=\rho_0 \vec{e}_1$. La section étudiée est une ellipse d'inclinaison $\theta$ par rapport à  une section verticale. Sa surface est donc $\pi \dfrac{R^2}{\cos \theta}$. Sur cette ellipse, on a alors $\vec{T}(M,\vec{n}=\dfrac{p_0 S_0 \vec{e}_1}{S_1}=p_0\cos \theta \vec{e}_1$.
+Attention à bien orienter la normale en fonction de quelle matière effectue son effort sur qui (cela change le signe). Le chargement extérieur est $p_0 S_0 \vec{e}_1$, donc $\vec{T}(M,\vec{e}_1)=\rho_0 \vec{e}_1$. La section étudiée est une ellipse d'inclinaison $\theta$ par rapport à  une section verticale. Sa surface est donc $\pi \dfrac{R^2}{\cos \theta}$. Sur cette ellipse, on a alors $\vec{T}(M,\vec{n})=\dfrac{p_0 S_0 \vec{e}_1}{S_1}=p_0\cos \theta \vec{e}_1$.
 
 En fait, puisqu'on a une traction selon $\vec{e}_1$, on pouvait directement dire que
 \begin{align*}
@@ -540,9 +540,13 @@ Dans le cas d'un élastique linéaire : $\sigma = \mathbb{K}\cdot\varepsilon$, o
 \begin{itemize}[label=\textbullet]
 \item Matériaux orthotrope : 3 plans de symétrie orthogonaux $\to$ 9 coefficients
 \item Matériaux isotropes transverse : (matériaux en couches) $\to$ 4 coefficients
-\item Matériaux isotropes : 2 coefficients : $E,\nu$ $\to$ $E=$ module d'Young et $\nu=$coefficients de Poisson ; ou (autre représentation) $\lambda,\mu$ coefficients de Lamé
+\item Matériaux isotropes : 2 coefficients : $E,\nu$ $\to$ $E=$ module d'Young et $\nu=$ coefficients de Poisson ; ou (autre représentation) $\lambda,\mu$ coefficients de Lamé
 
-Dans ce cas, on a $\sigma = 2\mu \varepsilon + \lambda \text{Tr}(\epsilon) \mathbb{I}$ avec $2\mu = \dfrac{E}{1+\nu}$ et $\lambda = \dfrac{\nu E}{(1+\nu)(1-2\nu)}$. Noter que si $\nu = 0,5$, alors le matériau est incompressible.
+Dans ce cas, on a
+\[\sigma = 2\mu.\varepsilon + \lambda.\text{Tr}[\varepsilon].\mathbb{I}\]
+et la relation inverse
+\[\epsilon = \dfrac{1+\nu}{E}\sigma - \dfrac{\nu}{E}\text{Tr}[\sigma].\mathbb{I}\]
+avec $2\mu = \dfrac{E}{1+\nu}$ et $\lambda = \dfrac{\nu E}{(1+\nu)(1-2\nu)}$. Noter que si $\nu = 0,5$, alors le matériau est incompressible.
 
 Pour
 \[
@@ -573,23 +577,23 @@ Alors
 \paragraph{Cas d'un fluide :}
 \begin{itemize}
 \item fluide parfait : $\sigma = -p . \mathbb{I}$, où $p$ est la pression. Il n'y a alors pas de contrainte tangentielle donc pas de viscosité.
-\item fluide newtonien : $\sigma = -pI + 2 \mu D + \underbrace{\lambda \text{Tr}[D].\mathbb{I}}_{\text{si incompressible}}$
+\item fluide newtonien : $\sigma = -p.\mathbb{I} + 2 \mu .\mathbb{D} + \underbrace{\lambda.\text{Tr}[\mathbb{D}].\mathbb{I}}_{=0\text{ si incompressible}}$
 \end{itemize}
 
 \section{Écriture d'un problème de MMC}
 Pour un problème fluide de volume $\omega$ et surface $\gamma$, on utilise :
 \begin{align*}
-\dfrac{\partial \rho}{\partial t} + \text{div}(\rho \vec{v}) & = 0\\
-\overrightarrow{\text{div}}\sigma + \vec{f} & = \rho\dfrac{\deriv \vec{v}}{\deriv t}\\
-\sigma & = -p\mathbb{I} + 2 \mu \mathbb{D} \quad ( + \lambda \text{Tr}[\mathbb{D}] \mathbb{I})
+& \dfrac{\partial \rho}{\partial t} + \text{div}(\rho.\vec{v}) = 0\\
+& \overrightarrow{\text{div}}\; \sigma + \vec{f} = \rho\dfrac{\deriv \vec{v}}{\deriv t}\\
+& \sigma = -p.\mathbb{I} + 2 \mu.\mathbb{D} \quad ( + \lambda. \text{Tr}[\mathbb{D}].\mathbb{I})
 \end{align*}
 Et les conditions aux limites (valeurs de $\vec{v}$ ou $\sigma \vec{n}$ sur $\gamma$).
 \bigskip
 
 Pour les solides dans le modèle des petites perturbations ($\rho_0 = \rho \det \mathbb{F}$) :
 \begin{align*}
-\overrightarrow{\text{div}} \sigma + \vec{f} & = \Big(\rho \dfrac{\deriv \vec{v}}{\deriv t} \Big)\\
-\sigma & = 2\mu\varepsilon (\vec{u}) + \lambda \text{Tr}[\varepsilon(\vec{u})]\mathbb{I}
+& \overrightarrow{\text{div}} \sigma + \vec{f} = \Big(\rho \dfrac{\deriv \vec{v}}{\deriv t} \Big)\\
+& \sigma = 2\mu.\varepsilon (\vec{u}) + \lambda .\text{Tr}[\varepsilon(\vec{u})].\mathbb{I}
 \end{align*}
 Ainsi que les conditions aux limites.
 
@@ -605,20 +609,20 @@ Ainsi que les conditions aux limites.
 
 En reprenant les équations antérieures : 
 \begin{align*}
-\text{div}(\vec{v}) = 0\\
-\overrightarrow{\text{div}}\dfrac{\deriv \vec{v}}{\deriv t}=\rho [\dfrac{\partial \vec{v}}{\partial t} + (\nabla \vec{v})\vec{v}]\\
-\sigma = -p \mathbb{I} + 2\mu \mathbb{D}\\
-\vec{v}=\vec{0} \text{ en } r=R\\
-p(z=0)=p_0\\
-p(z=L)=p_L\\
+& \text{div}(\vec{v}) = 0\\
+& \overrightarrow{\text{div}}\;\dfrac{\deriv \vec{v}}{\deriv t}=\rho \left[\dfrac{\partial \vec{v}}{\partial t} + (\nabla \vec{v}).\vec{v}\right]\\
+& \sigma = -p.\mathbb{I} + 2\mu.\mathbb{D}\\
+& \vec{v}=\vec{0} \text{ en } r=R\\
+& p(z=0)=p_0\\
+& p(z=L)=p_L\\
 \end{align*}
 
 \item Un matériau élastique cylindrique linéaire isotrope homogène $(E,\nu)$ (ou $(\lambda, \mu)$), possédant une pression interne, et statique.
 \begin{align*}
-\overrightarrow{\text{div}}\sigma = \vec{0}\\
-\sigma = 2\mu \varepsilon(\vec{u}) + \lambda \text{Tr}[\varepsilon(\vec{u})] \mathbb{I}\\
-\sigma \vec{n}=\vec{0} \text{ sur les bords } S_0,S_H\\
-\sigma \vec{n}=p_i\vec{e}_r \text{ sur } S_{int}\\
+& \overrightarrow{\text{div}}\sigma = \vec{0}\\
+& \sigma = 2\mu.\varepsilon(\vec{u}) + \lambda.\text{Tr} [\varepsilon(\vec{u})].\mathbb{I}\\
+& \sigma.\vec{n}=\vec{0} \text{ sur les bords } S_0,S_H\\
+& \sigma.\vec{n}=p_i.vec{e}_r \text{ sur } S_{int}\\
 \end{align*}
 \end{enumerate}
 
@@ -649,9 +653,11 @@ La solution de problème doit vérifier :
 
 \paragraph{Remarque} Cas isotrope: $\to$ deux coefficients définissent entièrement $\mathbb{K}$ : soit $(E,\nu)$ soit $(\lambda, \mu)$ et dans ce cas :
 \begin{align*}
-\sigma & = 2\mu \varepsilon + \lambda \text{Tr} [\varepsilon] \mathbb{I}\\
-& = \dfrac{E}{1 + \mu}\varepsilon + \dfrac{\nu.E}{(1+\nu)(1-2\nu)}\text{Tr}[\varepsilon] . \mathbb{I}\\
+\sigma & = 2\mu.\varepsilon + \lambda.\text{Tr} [\varepsilon]. \mathbb{I}\\
+& = \dfrac{E}{1 + \nu}\varepsilon + \dfrac{\nu.E}{(1+\nu)(1-2\nu)}\text{Tr}[\varepsilon] . \mathbb{I}
 \end{align*}
+et
+\[\epsilon = \dfrac{1+\nu}{E}\sigma - \dfrac{\nu}{E}\text{Tr}[\sigma].\mathbb{I}\]
 
 
 \paragraph{Note} On peut tout écrire sous la forme de produits matrices-vecteurs :
@@ -765,7 +771,16 @@ Après calcul, on trouve une solution de la forme $u_z = Az+B$ et $u_r(r) = Cr +
 
 Une méthode en déplacement est possible : poser $\vec{u} = u_r \vec{e}_r$ puis résoudre.
 
-On va prendre ici une méthode en contrainte : on intuite
+On va prendre ici une méthode en contrainte :
+\begin{itemize}
+\item On intuite une forme pour $\sigma$
+\item On vérifie les conditions limites sur $\sigma$
+\item On calcul $\varepsilon$ à partir de la loi de comportement
+\item On cherche $\vec{u}$ tel que $\epsilon = \nabla \vec{u}$ (\emph{Attention} : Si ce n'est pas possible, erreur quelque part, toute contrainte provient d'un déplacement ! Le plus souvent, $\varepsilon$ sera constant, et alors $\vec{u} = \varepsilon.\overrightarrow{OM}+cste$)
+\end{itemize}
+\bigskip
+
+Ici, on intuite
 \[
 \sigma = -p.\mathbb{I} =
 \begin{pmatrix}
@@ -775,7 +790,7 @@ On va prendre ici une méthode en contrainte : on intuite
 \end{pmatrix}
 \]
 
-Immédiatement, on vérifie les condition dur la divergence et sur $\sigma \vec{e}_r = -p \vec{e}_r$.
+Immédiatement, on vérifie les conditions sur la divergence et sur $\sigma.\vec{e}_r = -p.\vec{e}_r$.
 Alors 
 \begin{align*}
 \varepsilon & = \mathbb{K}^{-1}.\sigma\\
@@ -798,21 +813,31 @@ Ici, $\vec{u}=-\dfrac{p(1-2\nu)}{E}r.\vec{e}_r$. On n'observe donc uniquement de
 Si la sphère est creuse, il faut rajouter un condition sur le bord intérieur : le contrainte ne peut plus être constante (elle va dépendre de $r$) $\to$ utiliser la méthode en déplacement.
 \end{enumerate}
 
-\subsection{Problèmes de MMS - Fluides}
+\subsection{Problèmes de MMC - Fluides}
 
-On cherche $(\vec{v}, \rho)$ tel que
-\begin{itemize}
-\item $\text{div} \sigma + \vec{f} = \rho \dfrac{\deriv \vec{v}}{\deriv t}$ avec $\dfrac{\deriv \vec{v}}{\deriv t} = \dfrac{\partial \vec{v}}{\partial t} + \nabla \vec{v}.\vec{v}$
-avec :
+On cherche $(\vec{v}, \rho)$ tel que :
+\begin{itemize}[label=\textbullet]
+\item $\overrightarrow{\text{div}} \sigma + \vec{f} = \rho \dfrac{\deriv \vec{v}}{\deriv t}$ avec $\dfrac{\deriv \vec{v}}{\deriv t} = \dfrac{\partial \vec{v}}{\partial t} + \nabla \vec{v}.\vec{v}$. Dans le cas d'un écoulement lent (ou les effets d'inerties sont négligeables devant les effets visqueux), on néglige le terme $\Delta \vec{v}.\vec{v}$. Dans le cas d'un fluide incompressible, on a $\text{div} \vec{v} = 0$.
+Avec :
 \begin{itemize}[label=$\star$]
-\item $\sigma = -p\mathbb{I}$ (fluide parfait)
-\item $\sigma = -p\mathbb{I} + \pi$ avec $\pi = \underbrace{2\mu \mathbb{D}(\vec{v})}_{\text{partie visqueuse}} + \underbrace{\lambda \text{Tr}[\mathbb{D}].\mathbb{I}}_{=0 \; \text{si incompressible}}$
+\item $\sigma = -p.\mathbb{I}$ (fluide parfait)
+\item $\sigma = -p.\mathbb{I} + \pi$ avec $\pi = \underbrace{2.\mu. \mathbb{D}(\vec{v})}_{\text{partie visqueuse}} + \underbrace{\lambda . \text{Tr}[\mathbb{D}].\mathbb{I}}_{=0 \; \text{si incompressible}}$
 \end{itemize}
 \end{itemize}
+
+On a alors
+\[\text{div}\sigma = \text{div}(-p.\mathbb{I})+\mu\left[\text{div}(\grad \vec{v}) + \text{div}(\transpose\grad \vec{v})\right]\]
+Qui se simplifie en : (avec $\text{div}(\grad \vec{v}) = \vec{\Delta}\vec{v}$ et $\text{div}(\transpose\grad\vec{v})=\overrightarrow{\text{grad}}(\text{div}\;\vec{v})=\vec{0}$ car le fluide est incompressible)
+\[\begin{cases}
+-\vec{\nabla}p+\mu.\vec{\Delta}\vec{v}=\vec{0}\\
+\text{div}\;\vec{v} = \vec{0}
+\end{cases}\]
+
+\paragraph{Note :} Pour les solides, $\sigma = \alpha. \mathbb{I} + \mathbb{D}$ également, on peut alors en déduire la pression pour un solide de l'équation de comportement du solide $\sigma = 2.\mu.\varepsilon + \lambda.\text{Tr}[\varepsilon].\mathbb{I}$
 
 
 \paragraph{Équation de Navier-Stokes}
-\[-\vec{\nabla}p + \mu \Big(\vec{\delta}\vec{v} + \overrightarrow{\text{grad}} (\text{div} \vec{v})\Big) + \vec{f} = \rho \Big[\dfrac{\partial \vec{v}}{\partial t} + \nabla \vec{v}.\vec{v}\Big] \]
+\[-\vec{\nabla}p + \mu \Big(\vec{\Delta}\vec{v} + \overrightarrow{\text{grad}}\; (\text{div} \vec{v})\Big) + \vec{f} = \rho \Big[\dfrac{\partial \vec{v}}{\partial t} + \nabla \vec{v}.\vec{v}\Big] \]
 
 On défini le nombre de Reynolds $\mathcal{R}_e = \dfrac{\text{effets d'inertie}}{\text{effets visqueux}}$. Lorsque ce dernier est petit, on parle d'\emph{écoulement de Stockes}. En négligeant la gravité :
 \[-\vec{\nabla}p+\mu\vec{\nabla}\vec{v}=0\]
@@ -879,7 +904,7 @@ Lorsque le polynôme est de degré 2, on rajoute des nœuds de manière à fixer
 Par exemple, un cube avec des polynômes de degré 1 possède $n^3$ éléments, $(n+1)^3$ nœuds et donc $3(n+1)^3$ degrés de liberté (ddl ou dof en anglais).
 
 
-Pour calculer les $u_i$, en mécanique des solides (élastiques), le problèmes est équivalent à minimiser une énergie potentielle $E_p(u)=E_d(u) + W(u)$, où $E_d = \dfrac{1}{2}\int \mathbb{K}.\epsilon (\vec{u}).\epsilon(\vec{u})$ est l'énergie de déformation et $W$ le travail. Le problèmes est alors de minimiser $E_p$ dans l'espace de dimension fini des nœuds.
+Pour calculer les $u_i$, en mécanique des solides (élastiques), le problèmes est équivalent à minimiser une énergie potentielle $E_p(u)=E_d(u) + W(u)$, où $E_d = \dfrac{1}{2}\int \mathbb{K}.\varepsilon (\vec{u}).\varepsilon(\vec{u})$ est l'énergie de déformation et $W$ le travail. Le problèmes est alors de minimiser $E_p$ dans l'espace de dimension fini des nœuds.
 
 On peut écrire 
 \[u=\begin{pmatrix}
