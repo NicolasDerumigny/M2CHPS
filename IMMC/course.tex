@@ -542,11 +542,16 @@ Dans le cas d'un élastique linéaire : $\sigma = \mathbb{K}\cdot\varepsilon$, o
 \item Matériaux isotropes transverse : (matériaux en couches) $\to$ 4 coefficients
 \item Matériaux isotropes : 2 coefficients : $E,\nu$ $\to$ $E=$ module d'Young et $\nu=$ coefficients de Poisson ; ou (autre représentation) $\lambda,\mu$ coefficients de Lamé
 
-Dans ce cas, on a
+Dans ce cas, on a :
+
+
+\emph{Loi de Hooke :}
 \[\sigma = 2\mu.\varepsilon + \lambda.\text{Tr}[\varepsilon].\mathbb{I}\]
 et la relation inverse
 \[\epsilon = \dfrac{1+\nu}{E}\sigma - \dfrac{\nu}{E}\text{Tr}[\sigma].\mathbb{I}\]
 avec $2\mu = \dfrac{E}{1+\nu}$ et $\lambda = \dfrac{\nu E}{(1+\nu)(1-2\nu)}$. Noter que si $\nu = 0,5$, alors le matériau est incompressible.
+\bigskip
+
 
 Pour
 \[
@@ -857,7 +862,7 @@ On trouve $p(z)= p_0 + \dfrac{p_1-p_0}{L}\cdot z$ et $\vec{v}=v_z \vec{e}_z$ ave
 \end{itemize}
 
 Navier-Stokes nous donne :
-\[\mu \vec{\Delta}\vec{v} = \vec{\nabla}p\]
+\[\mu.b\vec{\Delta}\vec{v} = \vec{\nabla}p\]
 On trouve alors $\mu \dfrac{\partial^2 V_x}{\partial y ^2}=\dfrac{\partial p}{\partial x}$. Or $V_x$ ne dépend que de $y$ et $p$ ne dépend que de $x$, donc $\mu \dfrac{\partial^2 V_x}{\partial y ^2}=\dfrac{\partial p}{\partial x} = cste = \alpha$.
 
 D'où $p(x) = \alpha x +p_0$. Si on a $p=p_0$ sur les deux bords $\to \alpha = 0$ et $p(x)=p_0$ donc $V_x(y)=ay+b = \dfrac{V_0}{H}y$.
@@ -927,12 +932,20 @@ Où $E$ est le vecteur des efforts connus et $K$ la matrice de rigidité, elle a
 On se retrouve (après dérivation pour minimiser) avec le problème 
 \[\mathbb{K}.U=F\]
 
-Pour la résolution du $\mathbb{K}.U=F$ (décomposition de domaine), on peut utiliser des méthodes directes (si $n$ n'est pas trop grande, $< 1000$ ddl) ou itératives\footnote{Cf cours de MPNA}
+Pour la résolution du $\mathbb{K}.U=F$ (décomposition de domaine), on peut utiliser des méthodes directes (si $n$ n'est pas trop grande, $< 1000$ ddl) ou itératives\footnote{Cf cours de MPNA}. Dans d'industrie, on peut trouver des variantes telles $\mathbb{K}(U).U=F$ (Non-linéaire, résolution par la méthode de Newton), ou $\mathbb{K}U+\mathbb{M}\ddot{U} = F$ (dynamique, $\mathbb{M}$ est la matrice de masse, résolution par un schéma en temps).
 
 \paragraph{Propriétés de $\mathbb{K}$} Inversible (sauf s'il y a des mouvement de solides rigides) et symétriques, ce qui permet de simplifier les calculs. Elle est également creuse (les différents coefficients sont le produit de dérivées des $\phi_i$ localisées qui n'ont donc pas souvent un support commun), ce qui est très intéressant pour le stockage et l'inversion.
 
 \subsection{Et bien d'autres}
 Méthodes spectrales, ...
+
+\subsection{Étude du code mathlab de l'ENS Cachan}
+Plusieurs type de fichiers :
+\begin{itemize}
+\item .geo $\to$ géométrie
+\item .msh $\to$ maillage
+\item .imp $\to$ entrées (matériau, chargement)
+\end{itemize}
 
 
 \end{document}
