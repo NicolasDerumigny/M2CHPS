@@ -655,5 +655,11 @@ En TP : On considère
 \item Un ramasse-miettes s'occupe de récupérer les vieux couples (jamais de libération explicite)
 \end{itemize}
 
+\section{Virtualisation Logicielle}
+Le principe du système d'exploitation permet d'unifier l'accès au matériel et exécute plusieurs applications en parallèle via une unique implémentation très bas niveau. Il s'agit donc d'une première branche de virtualisation ! Double par ailleurs : virtualisation CPU (chaque processus se sent "seul") et l'accès aux périphériques est simplifié.
+
+Un émulateur est la virtualisation d'une machine complète $\to$ lent ! Notez que l'on peut émuler des machines qui n'ont jamais été implémentée (ex : Java, python).
+
+On parle d'\emph{hyperviseur} pour émuler un processeur $X$ sur un processeur $X$ (pour avoir un Linux dans un Windows par exemple).
 
 \end{document}

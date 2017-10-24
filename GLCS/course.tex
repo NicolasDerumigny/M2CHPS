@@ -263,6 +263,7 @@ target\_link\_library(myexe mpi)\\
 \end{algorithm}
 
 \paragraph{Batch Scheduler (ordonnanceur en français)}
+Pour plus d'informations, voir \url{https://groupes.renater.fr/wiki/poincare/public/description_de_poincare}\\
 Un \emph{cluster} est constitué d'une machine pour $U$ utilisateurs. Sur un noeud de calcul, on utilise OpenMP pour communiquer, et d'autres standards pour communiquer entre nœuds, le plus souvent MPI.
 
 Sur un machine perso, on a un seul utilisateur et plusieurs programme, les ressources de travail étant partagées dans le temps (\emph{multiplexage temporel}, sous Linux, l'OS change de programme tous les $50\; \mu s$). Cela n'est pas acceptable pour un supercalculateur : les processeurs sont affectés à une seule tâche via un \emph{scheduler}.
@@ -277,18 +278,19 @@ Le "batch" de pointcare est \texttt{LoadLeveler}, qui accepte plusieurs commande
 
 Le job est décrit dans un fichier bash dont des commentaires spéciaux décrivent certains paramètres du job :\\
 \begin{algorithm}[H]
-%TODO
+\DontPrintSemicolon
 \#!/bin/bash\\
-\#@ class = clallmds\\
-\#@ job\_name = RUN\_01\\
-\#@ total\_tasks = 32\\
-\#@ node = \\
-\#@ environement = COPY\_ALL\\
-\#@ wall\_clock\_limit = temps maximal de gestion des tâches \tcc*{(max 20:00:00 (20h))}
-\#@ output = \$(job\_name).\$(jobid).log\\
-\#@ error = \$(job\_name).\$(jobid).log\\
-\#@ job\_type = mpich\\
+\#@ class = clallmds \tcc*{Type de nœud à réserver (GPU ou non)}
+\#@ job\_name = RUN\_01 \tcc*{Nom du job}
+\#@ total\_tasks = 32 \tcc*{Nombre de processus MPI à lancer}
+\#@ node = \tcc*{nombre de nœuds à réserver}
+\#@ environement = COPY\_ALL \tcc*{Ne pas modifier}
+\#@ wall\_clock\_limit = \tcc*{temps maximal de gestion des tâches (max 20:00:00 (20h))}
+\#@ output = \$(job\_name).\$(jobid).log \tcc*{redirection de la sortie standard}
+\#@ error = \$(job\_name).\$(jobid).log \tcc*{idem avec stderr}
+\#@ job\_type = mpich \tcc*{mpich ou serial}
 \#@ queue \tcc*{valide le job}
+\#\# Lignes commentées
 \tcc{Contenu standard du script, exécuté sur le premier nœud}
 \tcc{La variable \texttt{\$\{LOADL\_TOTAL\_TASK\}} contient le nombre total de tâches}
 \end{algorithm}
@@ -389,9 +391,6 @@ La mémoire est divisée en deux partie : un partie partagée entre processus, e
 
 
 Il existe UPC (Universal Parallel C) qui est une extension du C permettant de gérer la mémoire partagée ou locale de manière transparente. D'autres librairies existent : CAF (Co-Array Fortran), X10 (Java), Chapel (un nouveau langage) et XcalableMP (pragma ajouté à C/C++/Fortran).
-
-
-
 
 
 

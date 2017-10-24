@@ -947,5 +947,162 @@ Plusieurs type de fichiers :
 \item .imp $\to$ entrées (matériau, chargement)
 \end{itemize}
 
+\section{Correction du partiel}
+\subsection{Cinématique}
+Repère $(O,\vec{e}_1, \vec{e}_2, \vec{e}_3)$.
+\[\vec{v}((M,t) = -\dfrac{vt}{\tau}\vec{e}_1-\dfrac{x_1}{\tau}\vec{e}_2\]
 
+
+\begin{enumerate}
+\item Forme du champs de vitesse
+
+A $t=0$ : le champ est nul en $x=0$, va de plus en plus vers le bas lorsque l'on s'éloigne vers les $x_1$ positifs, et vers le haut pour les $x_1$ négatifs.
+
+A $t=\tau$ : un terme de transport vers les $x_1$ négatifs s'ajoute.
+
+\item Calcul de $\mathbb{D}=\dfrac{1}{2}[\grad \vec{v} +\transpose \grad \vec{v}]$
+
+
+On trouve $\mathbb{D} = \begin{pmatrix}
+0 & -\dfrac{1}{\tau} & 0\\
+- \dfrac{1}{\tau} & 0 & 0\\
+0 & 0 & 0\\
+\end{pmatrix}
+$
+
+
+\item Notion de trajectoire (vision lagrangienne)
+$\vec{v} = \dfrac{\deriv \overrightarrow{OM}}{\deriv t}$
+On trouve alors
+\begin{align*}
+\begin{cases}
+x_1(t) = \dfrac{-vt^2}{2 \tau} + x^0_1\\
+x_2(t) = \dfrac{v}{2\tau^2}\dfrac{t^3}{3}- x^0_1 t + x^0_2\\
+x_3(t) = x_3^0\\
+\end{cases}
+\end{align*}
+
+\item En exprimant $t$ en fonction de $x_1$ puis en réinjectant dans $x_2$, on trouve $x_2(t) = \dfrac{v}{6\tau^2} \left( -2 \dfrac{\tau x_1}{v}\right)^{3/2}$. La forme de la trajectoire du point initialement en $x=0$ suit la courbe $x_2=-x_1^{3/2}$ dans le sens des $x_1$ négatifs.
+
+\item Calcul de $\mathbb{F} = 
+\begin{pmatrix}
+1 & 0 & 0\\
+-\dfrac{t}{\tau} 0 & 0\\
+0 & 0 & 1\\
+\end{pmatrix}$
+
+Et $\mathbb{E} =
+\dfrac{1}{2}(\transpose \mathbb{F} \mathbb{F}-\mathbb{I}) = \dfrac{1}{2} \begin{pmatrix}
+\left( \dfrac{t}{\tau}\right)^2 & - \dfrac{t}{\tau} & 0\\
+-\dfrac{t}{\tau} & 0 & 0\\
+0 & 0 & 0\\
+\end{pmatrix}$
+
+$\mathbb{E}$ et $\mathbb{F}$ sont \emph{sans unité}.
+
+\item La variation de volume $\dfrac{V(t)}{V_0}=\det \mathbb{F} = 1$, il n'y a donc pas de variation de volume.
+
+\item On trouve $\varepsilon = \dfrac{1}{2} \begin{pmatrix}
+0 & \dfrac{-t}{\tau} & 0\\
+\dfrac{-t}{\tau} & 0 & 0\\
+0 & 0 & 0\\
+\end{pmatrix}$
+\end{enumerate}
+
+\subsection{Étude des contraintes}
+\[\sigma(M) = \begin{bmatrix}
+-1 & x_1 & 2x_3\\
+x_1 & 1 & x_2\\
+2x_3 & x_2 & 8\\
+\end{bmatrix}
+\]
+\begin{enumerate}
+\item \[\sigma(M) = \begin{bmatrix}
+-1 & 1 & 0\\
+1 & 1 & 0\\
+0 & 0 & 8\\
+\end{bmatrix}
+\]
+Sur $\vec{e}_1$ : $\vec{T} = \left| \begin{matrix}
+-1\\
+1\\
+0\\
+\end{matrix} \right.$
+
+Sur $\vec{e}_2$ : $\vec{T} = \left| \begin{matrix}
+1\\
+1\\
+0\\
+\end{matrix} \right.$
+
+Sur $\vec{e}_3$ : $\vec{T} = \left| \begin{matrix}
+0\\
+0\\
+1\\
+\end{matrix} \right.$
+
+\item On applique $\overrightarrow{\text{div}}\sigma + \vec{f} = \vec{0}$. On trouve un effort volumique de $-\left|\begin{matrix}
+2\\1\\1
+\end{matrix}\right.$
+
+\item Il faut diagonaliser la matrice. On regarde $\det (\sigma - \lambda \mathbb{I})$ ; on trouve alors $\sqrt{2}$, $-\sqrt{2}$ et 8.
+\end{enumerate}
+
+\subsection{Viscosimètre rotatif}
+\begin{enumerate}
+\item Conservation de la masse
+\begin{itemize}[label=$\star$]
+\item $\dfrac{\deriv \rho}{\deriv t} + \rho. \text{div}\; \vec{v} = 0$ $\to$ $\text{div}\; \vec{v} = 0u$
+\item $\text{div} \;\sigma+ \vec{f} = \rho\left[\dfrac{\partial \vec{v}}{\partial t} + (\nabla\vec{v}).\vec{v}\right]$ soit $-\vec{\nabla}p+\mu \vec{\Delta}\vec{v}=\rho\left[\dfrac{\partial \vec{v}}{\partial t} + (\nabla\vec{v}).\vec{v}\right]$.
+\end{itemize}
+
+
+$\text{div} \vec{v} = \vec{0} \Rightarrow \dfrac{\partial V_\theta}{\partial \theta} = 0$, pas de soucis.
+
+On trouve alors :
+\[
+-\left|\begin{matrix}
+\dfrac{\partial p}{\partial r}\\0\\\dfrac{\partial p}{\partial z}\\\end{matrix}\right.
++ \mu \left|\begin{matrix}
+0\\ \dfrac{\partial^2v}{\partial r^2}+\dfrac{1}{r}\dfrac{\partial v}{\partial r} \\ 0
+\end{matrix}\right. = \rho \left|\begin{matrix}
+-\dfrac{v^2}{r} \\ 0 \\ 0
+\end{matrix}\right.
+\]
+En intégrant, on trouve $V(r) = A \ln r + B$
+\end{enumerate}
+\subsection{MMC du solide}
+\begin{enumerate}
+\item Superposition $\to$ valable car le problème est linéaire
+
+\item Symétries et invariances
+\item $\vec{u}$ régulier, $\overrightarrow{\text{div}} \sigma = \vec{0}$ ; $\sigma.\vec{e}_r=-p_0\vec{e}_r$ en $r=R$ et $\sigma = 2\mu \varepsilon + \lambda \text{Tr}[\varepsilon]\mathbb{I}$
+\end{enumerate}
+
+
+
+\section{Quelques mots sur le HPC}
+\textit{Cf document envoyé}
+
+On se place en linéaire sur un système grand.
+\[K.U=F\]
+
+On utilise la structure parallèle en distribuant le calcul (OpenMP, MPI. En mécanique, ça correspond à la décomposition de domaines.
+
+\paragraph{Difficultés}
+\begin{itemize}
+\item Façon de découper (partage équitable de la charge)
+\item Conditionnement (propriétés hétérogènes des matériaux)
+\item Dialogue itératif (l'essentiel de temps de calcul étant le dialogue entre les processeurs, il faut pouvoir échanger le minimum d'info)
+\end{itemize}
+On parle de \emph{condensation} : Tout écrire en fonction des données de bords, et échanger les infos lors de la communication (lié au complément de Schur).
+
+L'idée de décomposition de domaine est ancienne (Schwartz, 1869).
+\begin{itemize}
+\item Par méthode itérative
+\begin{itemize}
+\item Synchronisation (émergence de méthode \emph{asynchrones})
+\item Calculs indépendants (FTI, BDD, mixtes, ...)
+\end{itemize}
+\end{itemize}
 \end{document}
