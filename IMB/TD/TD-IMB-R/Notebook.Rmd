@@ -1,0 +1,59 @@
+---
+title: "IMC - TD n°1"
+author: "Nicolas Derumigny"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ade4)
+```
+
+1)
+```{r}
+summary(mpg)
+```
+
+ Les variables quantitatives sont *manufacturer*, *model*, *trans*, *drv*, *fl* et *class*.
+ 
+ 2) 
+```{r}
+help(mpg)
+```
+*displ* est la cylindrée du moteur, en litre ; *hwy* est la consommation du moteur en mile par galon sur autoroute et *drv* est le nombre et l'emplacement des roues motrices.
+
+3) Le graphique représente un affichage de la consommation du moteur sur autoroute en fonction de la cylindrée
+
+4) 
+```{r}
+ggplot(data = mpg)
+```
+Je ne vois rien car il faut préciser quels axes afficher.
+
+5)
+```{r}
+work <- ggplot(data = mpg) + geom_point(aes(x=cyl, y=hwy))
+plot(work)
+```
+
+6) Certains fabriquant peuvent proposer à la vente certains modèles moins consommateurs (et donc une consommation faible en mile par galon) du fait de technologies plus ou moins avancées.
+
+7)
+```{r}
+work <- ggplot(data = mpg) + geom_point(aes(x=displ, y=hwy, colour = manufacturer))
+plot(work)
+```
+On remarque que, effectivement, les points hors tendance sont principalement de marque audi et chevrolet. On pourrait affiner en affichant les modèles, mais cela alourdit le graphique à cause du trop grand nombre de valeurs possibles.
+
+```{r}
+work <- ggplot(data = mpg) + geom_point(aes(x=displ, y=hwy, colour = model))
+plot(work)
+```
+
+8) 
+```{r}
+work <- ggplot(data = mpg) + geom_bar(aes(x = drv))
+plot(work)
+```
+
+On remarque une faible proportion de véicules à propulsion (arrière), alors que les 4x4 et les traction (avant) se partagent à peu près équitablement le reste de l'échantillon.

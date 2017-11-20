@@ -227,3 +227,8 @@ English/
 
 # DA Project
 DA/Project
+
+# R Files
+.Rproj.user
+.RData
+.Rhistory
