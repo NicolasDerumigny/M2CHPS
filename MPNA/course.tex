@@ -76,7 +76,7 @@ La plupart du temps, les solutions à ce problèmes sont NP-Complète : on les a
 \item Métriques de performances
 \end{itemize}
 
-\paragraph{Quelques rappels inutiles sur la méthode de Gauss}
+\paragraph{Quelques rappels sur la méthode de Gauss}
 
 \paragraph{Méthode directe vs Itérative} Une méthode directe est une solution dont la solution peut être calculée avec un nombre fini d'opérations arithmétiques élémentaires. A contrario, une méthode itératives est un procédé qui part d'une information initiale arbitraire et renvoie un résultat approché. Pour cela, on réinjecte le résultat en entrée de l'algorithme afin de raffiner la solution.
 
@@ -88,6 +88,78 @@ La plupart du temps, les matrices sont creuses : on n'utilise donc pas les même
 
 Une des problématiques de nos jours est la consommation électrique. La nouvelle frontière du \emph{calcul exascale} impose des consommations énormes. La machine la plus puissante au 11/16 consommait plus de 15MW !
 
+\subsection{But du cours}
+\textit{Le principe de ce cours est la mise au point d'un paradigme de calcul pour la programmation à grande échelle et par la suite en déduire l'introduction de méthodes numériques modernes et "intelligentes" comme celles Krylov hybrides smart-tunées.}
+
+
+\section{Quel paradigme de programmation ?}
+Certains chercheurs pensent directement à OpenMP/MPI lorsque l'on parle d'informatique parallèle. C'est \emph{faux} : il ne s'agit que d'\emph{outils de programmation}, qui ne sont donc pas représentatifs de la théorie derrière.
+
+Par exemple, une multiplication matrice-vecteur puis réduction par addition du vecteur obtenu, il faut faire communiquer ensemble tous les processus : impossible. On rappel que le principal coût énergétique est le déplacement des données !
+
+On cherche donc à :
+\begin{itemize}
+\item Minimiser le mouvement des données (amoindrir au maximum le coût des communications)
+\item Consommation énergétique
+\item Parallélisme multi-niveau
+\item Ordonnancement multi-niveau
+\item Équilibrage de charge multi-niveau
+\item Tolérance aux pannes
+\end{itemize}
+
+
+\subsection{Une approche par composants...}
+Il faudrait un modèle de programmation laissant la possibilité de définir des blocs autonomes (cf GLCS) appelés \emph{composants} réutilisables dans différents contextes. Par exemple, un composant pour le produit matrice-vecteur creux peut être réutilisé dans un solveur calculant le valeurs propres. Si le travail est bien fait, on peut même réutiliser un composant séquentiel dans un programme parallèle.
+
+\subsection{... eux-même liés par un graph}
+On peut définir un problème comme un ensemble de composants liés entre eux par un graph. L'application est donc un ensemble de composants \emph{de très gros grains}, car chaque composant peut être lui-même un graph de composants.
+
+\bigskip
+Un projet de recherche à ce sujet est YML (attention, encore expérimental).
+
+\bigskip
+Les principales caractéristiques du modèle de programmation recherché sont alors :
+\begin{itemize}
+\item Privilégier grandement les communication asynchrones sur les communications synchrones
+\item Prendre en compte l'hétérogénéité des unités de calcul
+\item Prendre en compte la tolérance aux fautes
+\item Encourager l'équilibrage de tâche
+\item Introduire l'auto-tuning (on choisit automatiquement des paramètres pendant l'exécution avec assistance de l'utilisateur final)
+\end{itemize}
+
+\section{Unir et conquérir}
+
+
+On prend pour exemple la résolution d'un système linéaire $Ax=b$, où $A \in \mathcal{M}_n(\mathbb{C})$ et $b,x\in \mathbb{C}$ sont creux. On cherche quelques \emph{paires de Ritz} $\Lambda_k = (\lambda_1,..,\lambda_k)$ et $U_k = (u_1,...,u_k)$ tel que $\forall i \leq k, Au_i = \lambda_i u_i$.
+
+Ce problème est au cœur de l'algorithme de recherches de données de Google.
+\bigskip
+
+\paragraph{Problème :}
+Les algorithmes classiques ne sont pas adaptables aux grandes tailles (par exemple, la méthode QR pour trouver les valeurs propres a une précision dépendant de la taille de la matrice). On va donc chercher à réduire notre problème dans un sous-espace de taille moindre, chercher la solution dans ce sous-espace puis effectuer une transformation inverse afin d'obtenir un approximation des solutions recherchés. Le plus souvent, la précision n'est pas suffisante, et on va définir un sous-espace de meilleur qualité pour réitérer le processus.
+
+Pour notre exemple, on va projeter notre matrice dans un sous-espace de Krylov défini par la base $(v, Av, ..., A^{m-1}v)$. On résous le problème de valeur propre dans ce sous-espace ; puis on réitère le processus avec le $v$ trouvé en résolution du système de moins grande taille.
+
+Attention, il ne s'agit pas vraiment d'un méthode itérative, mais plus d'un méthode "à redémarrage" (projection-résolution-retour à l'espace de départ).
+\bigskip
+
+La méthode peut être redémarrée explicitement (ERAM/Saad), c'est-à-dire en mettant à jour explicitement $v$ puis recommençant le problème. Par contre, cette méthode n'est pas toujours stable.
+Un redémarrage implicite peut aussi être effectué (IRAM/Sorrensen) ; mais repose sur des bases mathématiques plus conséquentes.
+
+Ces méthodes on par contre un inconvénient : si les valeurs propres sont trop approchées les unes des autres, l'algo peut les "confondre".
+\bigskip
+
+
+La méthode \emph{Unite and conquer} consiste à utiliser plusieurs méthodes.
+
+
+\section{Multiple Krylov Subspace}
+On va non pas combiner un ensemble de méthode, mais combiner différentes instances de la même méthode. Par exemple, on va projeter-résoudre-retourner, puis on partage les résultats intermédiaires, et on choisit les meilleurs vecteurs retournés par les instantes. On peut également choisir des tailles de sous-espaces différentes de manière à recouvrer les temps des communications (asynchrones).
+
+La sélection d'une bonne valeur pour la dimension du sous-espace peu être fait par auto-tuning.
+
+
+  
 
 
 \end{document}

@@ -1105,4 +1105,28 @@ L'idée de décomposition de domaine est ancienne (Schwartz, 1869).
 \item Calculs indépendants (FTI, BDD, mixtes, ...)
 \end{itemize}
 \end{itemize}
+
+Chaque domaine est résolu indépendamment par des processeurs distincts. La partie clef se situe dans les interfaces, c'est-à-dire les communications entre des différents sous-domaines. On peut utiliser des méthodes asynchrones, qui rendent plus fluides les échanges et est plus robuste par rapport aux pannes.
+
+\paragraph{Cas de l'élasticité}
+$\vec{u}=\vec{u}_0$ sur $\partial_0 r$ ; $\overrightarrow{\text{div}} \sigma + \vec{f} = \vec{0}$ dans $r$ ; $\sigma \vec{n} = g$ sur $\partial_0 r$ et $\sigma = \mathbb{K}.\varepsilon(\vec{u})$
+
+A l'interface $\gamma = \partial r^{(1)} \cap \partial r^{(2)}$, on a : $\sigma \vec{n} = \vec{g}$, $\vec{u}^{(1)})\vec{u}^{(2)}$ et $\sigma^{(1)}.\vec{n}_1 + \sigma^{(2)}.\vec{n}_2 = \vec{0}$.
+
+Le problème global s'écrit donc :
+\begin{align*}
+K^{(s)}U^{(s)} = f^{(s)} + \lambda^{(s)} \to \text{équilibre par sous domaine}\\
+\sum_s A^{(s)} t^{(s)} U^{(s)} = 0 \to \text{égalité des déplacements}\\
+\sum_s A^{(s)}t^{(s)}\lambda^{(s)} = 0 \to \text{équilibre des interfaces}\\
+\end{align*}
+Où $\lambda^{(s)}$ représente \emph{l'effort d'interface} et $A$ relie les valeurs aux bords entre différents sous-domaines. On peut utiliser le \emph{complément de Schur} qui permet de passer d'un pb à inconnues des valeurs internes et au bord en un pb avec uniquement des valeurs au bord (on parle de \emph{condensation}).
+
+\paragraph{Méthode FETI}
+A chaque itération, on fixe $\lambda^{(s)}$. On résout le complément de Schur $S^{(s)}$, on regarde si on vérifie l'égalité des déplacement, sinon on recommence.
+
+\paragraph{Méthode BDD}
+A chaque itération, on fixe $U_b^{(s)}$. On résout le complément de Schur, puis on regarde si on vérifie l'équilibre des interfaces, sinon on recommence.
+
+
+
 \end{document}

@@ -1,0 +1,105 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+\usepackage{caption}
+%\usepackage{pgfplots}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{footnote}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{multirow}
+\usepackage{amsfonts}
+\usepackage[boxed,linesnumbered,noend]{algorithm2e}
+\usepackage{qcircuit}
+\usepackage{enumitem}
+\usepackage{eurosym}
+
+\newtheorem{thm}{Theorem}
+\newtheorem{prop}{Propriety}
+\newtheorem{lemma}{Lemma}
+\newtheorem{defi}{Definition}
+\newtheorem{coro}{Corollary}
+
+
+
+\setlength{\oddsidemargin}{0pt}
+% Marge gauche sur pages impaires
+\setlength{\evensidemargin}{0pt}
+% Marge gauche sur pages paires
+\setlength{\textwidth}{470pt}
+% Largeur de la zone de texte 
+\setlength{\topmargin}{0pt}
+% Pas de marge en haut
+\setlength{\headheight}{13pt}
+% Haut de page
+\setlength{\headsep}{10pt}
+% Entre le haut de page et le texte
+\setlength{\footskip}{40pt}
+% Bas de page + séparation
+\setlength{\textheight}{630pt}
+% Hauteur de la zone de texte
+
+\title{Introduction à la modélisation en biologie}
+\author{Magali Berland\footnote{magali.berland@uvsq.fr}}
+\date{}
+
+\newcommand{\note}{\medskip\noindent\underline}
+
+\begin{document}
+
+\maketitle
+\newpage
+
+Ce cours utilisera R et RStudio (ainsi que les packages \texttt{tidyverse}, \texttt{ade4}, \texttt{caret}, \texttt{mixOmics}.
+
+\section{Rappels de biologie}
+\subsection{Théorie fondamentale de la biologie moléculaire}
+
+L'ADN dirige sa propre réplication en ADN identique ainsi que sa transcription en ARN, pouvant ou non être traduit en protéines.
+
+L'ADN est le support stable et transmissible de l'information génétique. L'ARN a une durée de vie courte et ne permet que la transmission de l'information de l'ADN vers d'autres sites (ARNm). Par la suite, le ribosome traduit l'ARN en protéines.
+
+L'ARN et l'ADn sont très similaires, seuls les bases utilisées diffèrent (ACUT au lieu d'ATCG). Entre un humain et un chimpanzé, environ 98\% des gènes sont identiques, mais leur expression est plus ou moins inhibée.
+
+\subsection{Histoire du séquençage}
+Le séquençage constitue en le décodage de la suite des bases de l'ADN d'individus. Il commence en 1980, où l'idée est simplement de produire des données. La base de données \emph{GeneBank} (1982) a vu depuis sa taille doubler tous les 18 mois. En 1986, le NIH (National Insitiute of Health) est crée.
+
+En 1989, le premier projet de séquençage du génome humain est lancé.
+
+Un des principaux outil d'analyse de séquence est \emph{BLAS} (Basic Local Alignment Tool). Les premières cartes du génomes humains sont publkiées par le \emph{Généthon} (organisme français !). On pensait alors que le séquençage serait la clef pour guérir absolument toutes les maladies. Au milieu des années 1990 ont été crées les premiers séquenceurs automatisés, en parallèle de l'évolution du web qui permet des échanges plus faciles (même si il est encore plus rapide de demander un CD par la poste...). En 1997, le Centre National de Séquençage est créée. En 1998, une fondation aux Etats-Unis nommée Celera Genomics par Craig Venter (140 millions de dollars de matériel), avec pour but de finir le séquençage du génome humain, avec pour but de réqliser du profit sur d'éventuels brevets. Le coup de pression est mis et une course à la séquence se lance. Elle se termine le 26 juin 2000 par une annonce très politisée, la fin du séquençage du génome humain, déclaré patrimoine universel de l'humanité, avec impossibilité de d'en breveter une séquence. Par contre, il est possible de breveter les systèmes de détection de certaines séquences. La vraie fin du séquençage du génome est plutôt terminée en 2003. En 2007, des séquenceurs de nouvelle générations voient le jour, qui permettent de séquencer deux fois plus vite pour trois fois moins cher. Aujourd'hui, on arrive à un génome coûtant environ 1000 \$ à produire et quelques heures. On espère à l'avenir réduire ce cout vers 200-300\$ (environ le coût d'un examen hospitalier classique), ce qui lacerait l'ère de la médecine personnalisée (tel médicament fonctionnera ou non sur vous à cause de tel ou tel gène).
+
+
+\subsection{L'ère des \emph{omics}}
+De nombreux domaines ont émergés de ces découvertes, dont :
+\begin{itemize}
+\item La génomique : étude du fonctionnement d'un organisme d'un organe, d'un cancer, etc. à l'échelle du génome).
+
+Pour donner un ordre d'idée, le génome humain comporte 3 400 millions de nucléotides, pour 25 000 gènes. Les espèces ayant le plus de gènes sont les végétaux (le séquençage du blé sera publié vers cet année), ce qui est principalement dû à leur absence de mobilité.
+\item La transcriptonique : l'étude de l'ensemble des ARNm produit lors de la transcription d'un génome.
+
+On y fait notamment de la quantification des ARNm (taux de transcription des gènes dans différentes conditions). Cela est très difficile car l'ARNm est très sensible, sa quantité varie énormément avec l'environnement, ce qui rend difficile l'explication des résultats. On utilisait des puces à ADN (petites molécules d'ADN) pour réaliser des mesures, maintenant l'ARN est séquencé selon une autre méthode plus complète.
+
+\item La proténomique : l'étude des protéines d'une cellule, d'un tissu, d'un organe ou d'un organisme.
+
+Les principaux domaines d'étude sont la quantification des protéines, l'étude de leurs interactions, leur identification et caractérisation par spectrométrie de masse. Également, la prédiction de structure s'est développée par la bioinformatique (le seul moyen exact de découvrir la structure tridimensionnelle d'un protéine passe par une analyse cristallographique, et nécessite donc la protéine pure... pas facile !).
+
+Par exemple, la maladie de la vache folle (ou tremblante du mouton, ou Creutzfeldt-Jakob chez l'homme) provient d'une mauvaise conformation d'une protéine responsable de la création d'autres protéines dans le cerveau, générant des problèmes graves plusieurs dizaines d'années après la première mauvaise conformation.
+
+\subsection{La métagénomique}
+La métagénomique constitue en l'étude des micro-organismes vivant dans un certain milieu, par le séquencage de bactéries impossibles à différencier les unes des autres. On cherche alors des affiliations taxologiques (quel gène correspond à quelle bactérie), et des affiliations fonctionnelles. Un des exemple est l'étude du microbiote intestinal\footnote{domaine d'étude de notre professeure}.
+
+
+
+\end{itemize}
+
+
+
+\end{document}
