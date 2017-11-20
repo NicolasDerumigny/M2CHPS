@@ -57,3 +57,5 @@ plot(work)
 ```
 
 On remarque une faible proportion de véicules à propulsion (arrière), alors que les 4x4 et les traction (avant) se partagent à peu près équitablement le reste de l'échantillon.
+
+
