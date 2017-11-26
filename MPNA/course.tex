@@ -21,6 +21,7 @@
 \usepackage{qcircuit}
 \usepackage{enumitem}
 \usepackage{eurosym}
+\usepackage{stmaryrd}
 
 \newtheorem{thm}{Theorem}
 \newtheorem{prop}{Propriety}
@@ -52,12 +53,17 @@
 \date{}
 
 \newcommand{\note}{\medskip\noindent\underline}
+\newcommand{\lin}{\text{lin}\,}
 
 \begin{document}
 \maketitle
 \tableofcontents
 \newpage
 
+Référence : 
+\begin{itemize}
+\item \textit{Introduction au Calcul Matriciel et Optimisations}, P. Ciarlet 
+\end{itemize}
 
 \section{Introduction}
 \paragraph{Technique de regroupement}
@@ -156,10 +162,60 @@ La méthode \emph{Unite and conquer} consiste à utiliser plusieurs méthodes.
 \section{Multiple Krylov Subspace}
 On va non pas combiner un ensemble de méthode, mais combiner différentes instances de la même méthode. Par exemple, on va projeter-résoudre-retourner, puis on partage les résultats intermédiaires, et on choisit les meilleurs vecteurs retournés par les instantes. On peut également choisir des tailles de sous-espaces différentes de manière à recouvrer les temps des communications (asynchrones).
 
-La sélection d'une bonne valeur pour la dimension du sous-espace peu être fait par auto-tuning.
+La sélection d'une bonne valeur pour la dimension du sous-espace peut être faite par auto-tuning.
 
 
-  
+\section{Résolution de problèmes de grande taille}
+Soit $A\in \mathbb{C}^n$ une matrice creuse. Le problème est de calculer un petit nombre $s$ de valeur propres $\lambda_i$ et ses vecteurs propres (normalisés) correspondants $v_i$ de $A$ : $Av_i = \lambda_i v_i$ pour $i\in \llbracket 1,s \rrbracket$. On suppose les valeurs propres triées par ordre décroissant de module. On note $\lin (s)$ pour désigner tous les vecteurs colinéaires à $s$.
+
+\begin{defi}[Suite de Krylov]
+Soit $q$ un vecteur non nul. La suite $(A^nq)^{n \in \mathbb{N}}$ est appelée suite de Krylov.
+\end{defi}
+
+\begin{defi}[Sous-espace de Krylov]
+Le sous espace de Krylov de taille $m$ est le sous-espace engendré par les $m$ premiers vecteurs de la suite de Krylov si ces vecteurs sont linéairement indépendants.
+\end{defi}
+
+\begin{thm}
+\[ A^m q \underset{m \to + \infty}{\longrightarrow} lin(v_1)\]
+\end{thm}
+
+La méthode de la puissance est aussi appelée méthode des itérations du quotient de Rayleigh. Il s'agit de calculer $A^m q$ pour $m = 1, 2, ...$ jusqu'à convergence.
+
+
+\paragraph{Méthode des itérations simultanées (IS)}
+Soit $S= \begin{pmatrix} q_1 & ... &q_k \end{pmatrix}$ où $q_1,..., q_k$ sont des vecteurs linéairement indépendants. On calcule $S, AS, A^2S, ...$. On peut montrer que le suite $A^mS \underset{m\to +\infty}{\longrightarrow} lin(v_1,v_2,...,v_k)$.
+
+\paragraph{Algorithme d'Arnoldi}
+On définit les sous-espaces de Kyrlov $K_m(a,q_i) = lim(q_1, Aq_1,...,A^{m-1}q_1)$. On calcul en fait une base orthonormée.
+
+\begin{algorithm}[H]
+$q_1 = \dfrac{q}{||q||}$ \\
+\For{k=1 à m-1}{
+	$w=Aq_k$\\
+	\For{j=1 à k}{
+		$h_{j,k}=\langle w,q_0 \rangle$\\
+		$w=w-h_{j,k}\cdot q_j$
+	}
+	$h_{k+1, k}=||w||_2$\\
+	$q_{k+1}=\dfrac{w}{h_{k+1,k}}$
+}
+\end{algorithm}
+
+L'algorithme fournit alors $H_{m,m_1}$ et $Q_m$ tels que $AQ_{m-1}=Q_{m}\cdot H_{m,m-1}$, que l'ont peut réécrire en $AQ_m = Q_{m-1}\cdot H_{m-1,m-1}+q_m\cdot h_{m,m-1} \cdot e_{m-1}^T$ où le second terme est le \emph{résidu} (et $e_{m-1}$ le $m-1$ème vecteur de la base canonique).
+
+\paragraph{Remarques}
+\begin{itemize}
+\item Si $h_{m,m} = 0 \Rightarrow Q_{m-1}^TAQ_{m-1}=H_{m-1,m-1}$ et les valeurs propres de $H_{m-1,m-1}$ sont celles de $A$.
+
+\item Si $m-1=n \Rightarrow Q-n$ est une base orthonormal de $\mathbb{C}^n$ et les valeurs propres de $H_{n,n}$ sont celles de $A$.
+
+\item Soit $H=H_{m-1,m-1}$ et $Hy=\lambda y$ et $w=Q_{m-1}y$ alors l'équation devient
+\[Av=\lambda v + h_{m, m-1}q_m e_{m-1}^T y\]
+Soit
+\[||Av-\lambda v|| = |h_{m,m-1}|.|y_{m-1}|.\underbrace{||q_m||_2}_{=0}\]
+Le résidu est alors $||Av-\lambda v||_2 = |h_{m,m-1}|.|y_{m-1}|$
+\end{itemize}
 
 
 \end{document}
