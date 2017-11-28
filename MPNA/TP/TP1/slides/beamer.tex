@@ -1,0 +1,104 @@
+\documentclass{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+%\usepackage[backend=biber]{biblatex}
+%\addbibresource{biblio.bib}
+\usepackage[T1]{fontenc}
+
+\usepackage[boxed,linesnumbered,noend]{algorithm2e}
+
+
+\usetheme{ENSLyon} 
+\title[MPNA]{Etude de performances}
+\author[N.D.]{Nicolas Derumigny}
+\institute[]{ENS Lyon}
+\date{29 Novembre 2017}
+  \setbeamersize{text margin left=10mm}
+  \setbeamersize{text margin right=10mm}
+
+\setbeamertemplate{navigation symbols}{}
+\usecolortheme{ENSLyon_blue}
+
+\begin{document}
+
+\begin{frame}
+	\titlepage
+	\begin{center}
+	\includegraphics[height=0.5cm]{logoens.pdf}
+
+	\end{center}
+\end{frame}
+
+\section{Algorithm}
+\begin{frame}
+\begin{algorithm}[H]
+$q_1 = \dfrac{q}{||q||}$ \\
+\For{k=1 à m-1}{
+	$w=Aq_k$\\
+	\For{j=1 à k}{
+		$h_{j,k}=\langle w,q_0 \rangle$\\
+		$w=w-h_{j,k}\cdot q_j$
+	}
+	$h_{k+1, k}=||w||_2$\\
+	$q_{k+1}=\dfrac{w}{h_{k+1,k}}$
+}
+\caption{Arnoldi's algorithm}
+\end{algorithm}
+\end{frame}
+
+\section{Results}
+\begin{frame}{i5-2520M}
+\begin{columns}
+\begin{column}{0.3\linewidth}
+\begin{itemize}
+\item Sandy Bridge
+\end{itemize}
+\end{column}
+\begin{column}{0.3\linewidth}
+\begin{itemize}
+\item 3.5 GHz
+\end{itemize}
+\end{column}
+\begin{column}{0.3\linewidth}
+\begin{itemize}
+\item Hyperthreaded Dual-core
+\end{itemize}
+\end{column}
+\end{columns}
+\begin{figure}
+\includegraphics[width=0.82\linewidth]{lenovo-i5-2emeGen.png}
+\caption{Performance evaluation on the i5-2520M}
+\end{figure}
+\end{frame}
+
+\begin{frame}{i5-6600k}
+\begin{columns}
+\begin{column}{0.3\linewidth}
+\begin{itemize}
+\item Skylake
+\end{itemize}
+\end{column}
+\begin{column}{0.3\linewidth}
+\begin{itemize}
+\item 3.9 GHz
+\end{itemize}
+\end{column}
+\begin{column}{0.3\linewidth}
+\begin{itemize}
+\item Quad-core
+\end{itemize}
+\end{column}
+\end{columns}
+\begin{figure}
+\includegraphics[width=0.82\linewidth]{i5-6600K.png}
+\caption{Performance evaluation on the i5-6600K}
+\end{figure}
+\end{frame}
+%\begin{frame}{Bibliographie}
+%\nocite{*}
+%\printbibliography    
+%\end{frame}
+
+\end{document}
