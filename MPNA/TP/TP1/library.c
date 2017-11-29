@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#define M 1000
+//#include <mpi.h>
+#define M 80
 
 
 clock_t mv_time = 0, p_scal_time = 0;
@@ -90,6 +91,7 @@ void arnoldi(
 }
 
 int main (int argc, char *argv[], char*env[]) {
+	//MPI_BEGIN();
 	clock_t start, end;
 	int size[2] = {atoi(argv[1]),atoi(argv[1])};
 	double **dst, *matrix, *vector;
@@ -102,12 +104,13 @@ int main (int argc, char *argv[], char*env[]) {
 	start = clock();
 	arnoldi(dst, matrix, vector, size, M);
 	end = clock();
-	printf("%f,%f,%f\n",(double) (end-start)/CLOCKS_PER_SEC, (double) (mv_time)/CLOCKS_PER_SEC, (double) (p_scal_time)/CLOCKS_PER_SEC);
+	printf("%f;%f;%f\n",(double) (end-start)/CLOCKS_PER_SEC, (double) (mv_time)/CLOCKS_PER_SEC, (double) (p_scal_time)/CLOCKS_PER_SEC);
 	free(vector);
 	for (int i = 0; i<M+1; i++) {
 		free(dst[i]);
 	}
 	free(dst);
 	free(matrix);
+
 	return 0;
 }

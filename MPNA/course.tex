@@ -23,11 +23,11 @@
 \usepackage{eurosym}
 \usepackage{stmaryrd}
 
-\newtheorem{thm}{Theorem}
-\newtheorem{prop}{Propriety}
-\newtheorem{lemma}{Lemma}
-\newtheorem{defi}{Definition}
-\newtheorem{coro}{Corollary}
+\newtheorem{thm}{Théorème}
+\newtheorem{prop}{Propriété}
+\newtheorem{lemma}{Lemme}
+\newtheorem{defi}{Définition}
+\newtheorem{coro}{Corollaire}
 
 
 
@@ -54,6 +54,7 @@
 
 \newcommand{\note}{\medskip\noindent\underline}
 \newcommand{\lin}{\text{lin}\,}
+\newcommand{\scalar}[2]{\langle #1 ; #2 \rangle}
 
 \begin{document}
 \maketitle
@@ -218,4 +219,66 @@ Le résidu est alors $||Av-\lambda v||_2 = |h_{m,m-1}|.|y_{m-1}|$
 \end{itemize}
 
 
+\section{Méthode de la puissance}
+
+Soit $A$ une matrice carrée de taille $n$ et de valeurs propres $\lambda_1,...,\lambda_n$ ses valeurs propres associés aux vecteurs $v_1,...,v_n$ triées par modules décroissant. Soit $q$ un vecteur non orthogonal à $v_1$. Alors l'algorithme de la méthode de la puissance est
+
+\begin{algorithm}[H]
+$q_0 = \dfrac{q}{||q||}$\;
+\For{$i = 0$ à $n$}{
+$q_{i+1}=A\dfrac{q_i}{||Aq_i||}$\;
+}
+\end{algorithm}
+
+\begin{thm}
+Si $q_0(1)\neq 0$ (première composante de $q_0$), alors $q_n \underset{n\to \infty}{\to} v_1$ à un facteur multiplicatif près.
+\end{thm}
+
+\begin{proof}
+On note $\gamma_n = ||Aq_n||^{-1}$
+\begin{align*}
+q_0 &= \sum_{i=1}^n \alpha_i v_i\\
+q_1 & = Aq_0.\gamma_0\\
+& = \gamma_0 A \sum_{i=1}^n \alpha_i v_i = \gamma_0 \sum_{i=1}^n \alpha_i \underbrace{Av_i}_{\lambda_i v_i}\\
+\end{align*}
+De même,
+\begin{align*}
+q_2 & = \gamma_1 \gamma_0 A \sum_{i=1}^n \alpha_i \lambda_i v_i\\
+& = \gamma_1 \gamma_0 \sum_{i=1}^n \alpha_i \lambda^2 v_i\\
+\end{align*}
+D'où
+\begin{align*}
+q_m &=\underbrace{\left( \prod_{i=0}^ {m-1} \gamma_i \right)}_{= \zeta_{m-1}} . \sum_{i=1}^{n}\alpha_i^m v_i\\
+& = \lambda_1^m  \sum_{i=1}^n \alpha_i .  \zeta_{m-1} . \underbrace{\left( \dfrac{\lambda_i}{\lambda_1} \right)^m}_{\substack{\underset{n\to +\infty}{\longrightarrow} 0\\ \text{ quand $i \neq 1$}}} v_i\\
+\end{align*}
+Or $\zeta_{m-1} = \prod_{i=0}^{m-1} \gamma_i = \prod_{i=0}^{m-1} \||Aq_{i}||^{-1} \leq \prod_{i=0}^{m-1} ||\lambda_1.q_i||^{-1}\leq |\lambda_1|^m$\\
+Il vient
+\[
+\lin q_m \underset{m\to + \infty}{=} \lin \lambda_1^m \zeta_{m-1}\alpha_1 v_1  \]
+\end{proof}
+
+\paragraph{Remarque}
+La vitesse de convergence est régie par $\dfrac{\lambda_2}{\lambda_1}$.
+
+\begin{prop}
+Soit $\mu\in \text{Sp}(A)$. Alors la matrice $(A-\mu I)^{-1}$ possèdes les mêmes vecteurs propres que $A$ et ses valeurs propres sont  $(\lambda - \mu)^{-1}$ où $\lambda$ est une valeur propre de $A$.
+\end{prop}
+
+\begin{coro}
+Si $\mu$ est proche d'une valeur propre $\lambda_j$ de $A$, Alors $(\lambda_j - \mu)^{-1}$ sera une valeur propre beaucoup plus grande que $(\lambda_i - \mu)^{-1}$ pour $i\neq j$. On peut appliquer la méthode de la puissance à la matrice $A-\lambda I)^{-1}$ et accélérer ainsi sa vitesse de convergence.
+\end{coro}
+
+
+\subsection*{Méthode de déflation}
+Soit $\mu$ un nombre complexe. On cherche à déterminer la valeur propre de $A$ la plus proche de $\mu$. Pour cela, on définit une suite de vecteur $q_{n+1} = (A-\mu I)^{-1}q_n$. On peut démontrer que $\scalar{q_{n+1}}{q_n} \to \lambda$ et $\dfrac{q_n}{||q_n||}\to v$ avec $\lambda$ la valeur propre la plus proche de $\mu$ et $v$ sont vecteur propre associé.
+
+
+Supposons $\lambda_1$ et $v_1$ connus, nous recherchons $\lambda_2$ et $v_2$.
+\begin{itemize}
+\item[Cas symétrique] Posons $B=A-\lambda_1 \left( \dfrac{v_1.v_1^T}{||v_1||^2}\right)$. Les valeurs propres de $B$ sont $0,\lambda_2,...,\lambda_n$. Il suffit donc d'appliquer la méthode des puissances à $B$.
+\item[Cas non symétrique] $B$ n'as pas de raison d'avoir les $0,\lambda_2,...,\lambda_n$ comme valeurs propres (car les vecteurs propres de $A$ ne sont pas forcément orthogonaux). On utilise dans ce cas la matrice transposée de $A$ (qui a les même valeurs propres que $A$). Soit $A^Tw_1=\lambda_1w_1$. Alors $B=A-\left(
+\dfrac{v_1w_1^T}{||w_1^Tv_1||} \right)$.
+\end{itemize}
+
 \end{document}
+

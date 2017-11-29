@@ -6,12 +6,13 @@
 %\usepackage[backend=biber]{biblatex}
 %\addbibresource{biblio.bib}
 \usepackage[T1]{fontenc}
-
 \usepackage[boxed,linesnumbered,noend]{algorithm2e}
+\usepackage{listings}
+\usepackage{xcolor}
 
 
-\usetheme{ENSLyon} 
-\title[MPNA]{Etude de performances}
+\usetheme{ENSLyon}
+\title[MPNA]{Performance evaluation: Arnoldi's algorithm}
 \author[N.D.]{Nicolas Derumigny}
 \institute[]{ENS Lyon}
 \date{29 Novembre 2017}
@@ -21,8 +22,21 @@
 \setbeamertemplate{navigation symbols}{}
 \usecolortheme{ENSLyon_blue}
 
-\begin{document}
 
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{backgroundColour}{rgb}{0.95,0.95,0.92}
+
+\lstset{
+    language=C,
+    backgroundcolor=\color{backgroundColour}, 
+    basicstyle=\footnotesize\ttfamily\color{black},
+    keywordstyle=\bfseries\color{teal},
+    commentstyle=\color{mGreen},
+    stringstyle=\color{blue}
+}
+\begin{document}
 \begin{frame}
 	\titlepage
 	\begin{center}
@@ -46,6 +60,25 @@ $q_1 = \dfrac{q}{||q||}$ \\
 }
 \caption{Arnoldi's algorithm}
 \end{algorithm}
+\end{frame}
+
+\section{Time measurements}
+\begin{frame}[fragile]{How to measure the execution time?}
+\begin{itemize}
+\item Use \texttt{time.h}
+\end{itemize}
+\bigskip
+\begin{lstlisting}[frame=single]
+#include <time.h>
+
+int main(){
+	clock_t start, end;
+	start = clock();
+	//program here
+	end = clock();
+	printf("%d\n", (end-start)/CLOCKS_PER_SEC));
+}
+\end{lstlisting}
 \end{frame}
 
 \section{Results}
@@ -73,29 +106,29 @@ $q_1 = \dfrac{q}{||q||}$ \\
 \end{figure}
 \end{frame}
 
-\begin{frame}{i5-6600k}
-\begin{columns}
-\begin{column}{0.3\linewidth}
-\begin{itemize}
-\item Skylake
-\end{itemize}
-\end{column}
-\begin{column}{0.3\linewidth}
-\begin{itemize}
-\item 3.9 GHz
-\end{itemize}
-\end{column}
-\begin{column}{0.3\linewidth}
-\begin{itemize}
-\item Quad-core
-\end{itemize}
-\end{column}
-\end{columns}
-\begin{figure}
-\includegraphics[width=0.82\linewidth]{i5-6600K.png}
-\caption{Performance evaluation on the i5-6600K}
-\end{figure}
-\end{frame}
+%\begin{frame}{i5-6600k}
+%\begin{columns}
+%\begin{column}{0.3\linewidth}
+%\begin{itemize}
+%\item Skylake
+%\end{itemize}
+%\end{column}
+%\begin{column}{0.3\linewidth}
+%\begin{itemize}
+%\item 3.9 GHz
+%\end{itemize}
+%\end{column}
+%\begin{column}{0.3\linewidth}
+%\begin{itemize}
+%\item Quad-core
+%\end{itemize}
+%\end{column}
+%\end{columns}
+%\begin{figure}
+%\includegraphics[width=0.82\linewidth]{i5-6600K.png}
+%\caption{Performance evaluation on the i5-6600K}
+%\end{figure}
+%\end{frame}
 %\begin{frame}{Bibliographie}
 %\nocite{*}
 %\printbibliography    
