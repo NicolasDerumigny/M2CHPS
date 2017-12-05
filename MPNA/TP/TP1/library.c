@@ -106,7 +106,7 @@ int main (int argc, char *argv[], char*env[]) {
 	end = clock();
 	printf("%f;%f;%f\n",(double) (end-start)/CLOCKS_PER_SEC, (double) (mv_time)/CLOCKS_PER_SEC, (double) (p_scal_time)/CLOCKS_PER_SEC);
 	free(vector);
-	for (int i = 0; i<M+1; i++) {
+	for (int i = 0; i<M; ++i) {
 		free(dst[i]);
 	}
 	free(dst);

@@ -113,6 +113,12 @@ Les phages sont des virus contenant des morceaux d'ADN qui, ayant infecté une c
 Le \emph{phénotype} est l'ensemble des caractères physiques observables d'un individu. Il correspond à l'effet ou non de l'environnement qui révèle certaines caractéristiques.
 
 \subsection*{Le langage Go}
+Référence :
+\begin{itemize}
+\item The Go Programming Blueprint, Mat Ryer
+\end{itemize}
+
+
 Il est plus expressif que le C, ne contient pas les exceptions, intègre en natif les mêmes idées que MPI. Il est créé en 2007 par les anciens de C qui n'ont pas aimé le C++. En 2016, IBM lance Go sur leurs mainframes.
 
 
@@ -121,11 +127,79 @@ Le langage Go est postfixé, gère l'UTF-8 ; les variables et les constantes. Le
 
 Il existe un destructeur local : \texttt{defer}, ce qui permet de faire du code propre (une sorte de \texttt{try..catch..}). Il supporte la vectorisation dès que possible (inline). Il n'y a d'héritage, les interfaces doivent être compatible avec les objets utilisés (usine à composants ou \emph{duck typing}).
 
-Référence :
+\subsection{Les biotechnologies}
+Les bases de données bioinformatiques ont évolués en suivant la loi de Moore ($\to$ des ordinateurs sont utilisées pour explorer les données. Idem pour le coût de la mégabase brut ; qui a par ailleurs dépassé la loi de Moore suite à une nouvelle méthode de séquençage. 
+
+Un gène commence par un activateur ATG et se termine par un terminateur TAA, TAG ou TGA? Un \emph{régulon} est composé d'un motif plus les gènes, le motif gérant la production ou non de la protéine associée au gène en fonction de l'environnement. On peut construire des expérience permettant de tester l'influence ou non de la régulation sur le gène.
+
+Le biologiste va fabriquer des gènes modifiés et observer par électrophorèse un résultat.
+
+Le séquençage se fait de nos jour par une amplification du signal (approche \emph{Shotgun}) consistant à casser en petits morceaux puis utiliser des bactéries pour les multiplier ($\to$ biais de sélection). Deux mécanismes sont possible pour lire l'ADN ainsi produit : la polymérase et la ligase, modifiées pour émettre un signal à chaque base lue. Cette technique est nommée \emph{NGS : Next Generation Sequencing}. On lit en parallèle les couleurs des séquences pour obtenir les bases des morceaux de séquences d'ADN. 
+
+Il y a quatre grandes façon de la NGS : 
+
 \begin{itemize}
-\item The Go Programming Blueprint, Mat Ryer
+\item 454 qui utilise de l'ATB (100 Mb \emph{redondant} par expérience)
+\item SOLiD (6 000 Mb)
+\item Solexa GA (utiliser un ADN "hameçon" sur un substrat pour ensuite amplifier et lire les couleurs par un appareil photo.
+\item Helioscope
+\item Pacific Biosciences
 \end{itemize}
 
+Le NCBI (National center for biotechnology information) a crée GeneBank en 1992, créant alors un format de fichier .gbk (peu pratique à manipuler car non créé par des informaticiens..).
+
+Il existe des chromosomes linéaires ou circulaires, que l'on représente souvent en GC\% (proportion de GC par rapport au AC).
+
+
+\begin{defi}[Complexité de Kolmogorov]
+On définit $K(s)$ pour une suite binaire finie $s$, $K$ est la taille du plus court programme qui produit $s$.
+\end{defi}
+
+On peut utiliser cette mesure pour avoir un ordre d'idée de la complexité d'un gène. Par exemple, la variabilité d'un être humain  se décrit en environ 20 Mo.
+
+
+
+
+
+
+
+\section{Analyse en composantes principales}
+Le principes est de créer des nouvelles variables résumant les informations à partir de combinaisons linéaires des variables pré-existantes afin de minimiser la perte d'information.
+
+
+\section{Comparaison de séquences}
+L'idée intuitive est d'utiliser une vision \emph{dot-plot} : une matrice montrant les nucléotides communes. On peut également utiliser la distance de Levenshtein, basée sur le nombre de modifications (substitution, insertion, délétion).
+
+
+
+
+
+
+\section{Annexe}
+\subsection{R}
+La fonction \texttt{gather (key, value, ...)} permet de dupliquer les colonnes non présentes dans \texttt{...} afin d'obtenir une ligne par couple (variable, value) des colonnes sélectionné. Le nom de la colonne est mise dans une nouvelle colonne de nom \texttt{key} et sa variable dans \texttt{value}. On peut utiliser l'opérateur \texttt{col1:col2} afin de sélectionner différentes colonnes consécutives ; et également l'opérateur \texttt{-col} pour sélectionner toutes les colonnes sauf \texttt{col}. Pour trier, on peut utiliser \texttt{arrange}.
+
+La fonction \texttt{spread} fait l'inverse de \texttt{gather}. \texttt{separate} permet de séparer une colonne en plusieurs colonne, son contraire est \texttt{unite}. Les fonctions \texttt{filter}, \texttt{distinct} et \texttt{slice} sont également très utiles, tout comme \texttt{select} (\texttt{filter} sur les colonnes). On peut opérer sur les chaines de caractères avec \texttt{starts\_with}, \texttt{ends\_with}, \texttt{matches} et \texttt{num\_range}.
+
+Les données peuvent être groupée avec \texttt{group\_by}, cette opération est \emph{silencieuse}, c'est à dire qu'on ne voit pas les changements sur les tableau de données.
+
+\subsection{ggplot2}
+S'utilise de la manière suivante :\\
+\texttt{ggplot(data = DATA + GEOM\_FUNCTION(mapping = aes(mapping)}
+
+Il existe plusieurs calques dans ggplot, qui s'ajoutent dans l'ordre suivant :
+\begin{itemize}
+\item Data (fond du calque)
+\item Aesthtics (légende, grille)
+\item Geometrics (forme de représentation)
+\item Facet (réaliser un tableau de plusieurs graphes)
+\item Statistics (modèle ou représentation statistique des données)
+\item Coordinates (passer en polaire, en log, etc)
+\item Scale (passer en linéare, log, à l'envers, etc)
+\item Theme (arrière-plan)
+\end{itemize}
+
+La cheat sheet dans RStudio est très utile pour retrouver rapidement ces commandes.
 
 
 \end{document}

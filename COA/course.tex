@@ -119,6 +119,151 @@ On va utiliser un visiteur. Un arbre est composé de noeuds de différents type 
 On va utiliser deux méthodes : une \texttt{accept} côté arbre et une \texttt{visit} côté visiteur. Cela permet de pouvoir faire deux \emph{double dispatch} : appeler une fonction différente en fonction du couple (type de noeud, type de visiteur).
 
 \subsection{Le lexer}
-Le but ici est de différencier les tokens. On va utiliser des expressions régulières. On utilisera \emph{flex} (et par la suite \emph{bison}) pour générer un automate, et même des sous-automates de règles (pour gérer les commentaires ou les chaînes de caractère par exemple).
+Le but ici est de différencier les tokens. On va utiliser des expressions régulières. On utilisera \emph{flex} (et par la suite \emph{bison}) pour générer un automate, et même des sous-automates (ou états) de règles (pour gérer les commentaires ou les chaînes de caractère par exemple).
+
+\subsection{Le parser}
+Il sert à construire un arbre permettant un parcours simple du programme, car il est organisé de manière hiérarchique. 
+
+On va définir deux types de règles : les \emph{terminaux} et les \emph{non-terminaux}. Les terminaux sont les token du lexer, les non-terminaux sont produits par les règles de grammaire de la forme $\alpha \to \beta_1\beta\2...\beta_k$.
+
+Pour déclarer des règles dans Bison, on utilise la syntaxe suivante :\\
+\texttt{varDecl := VAR ID typeannotation ASSIGN expr \{\$\$ = new VarDecl(@1, \$2, \$5, \$3);\}}
+\texttt{@} est la position dans le code du mot-clef parsé (cela permet de décorer l'arbre pour donner des informations de débugage), et \texttt{\$i} est le $i$-ème argument de la règle parsée ($\beta_i$).
+
+Il faut ensuite déclarer le type retourné par \texttt{\$\$} via :
+\texttt{\% Type < VarDecl *> varDecl}.
+
+On peut écrire même des règles récursives !
+\bigskip\noindent
+
+
+\texttt{
+\%type <std::vector<Expr *>> expr nonemptyexpr;\\
+...\\
+seqExp := LPAREN exprs RPAREN;\\
+exprs := /*empty*/ | nonemptyexpr}\\
+avec\\
+\texttt{
+nonemptyexpr := expr \{ \$\$ = std::vector<Expr *>({\$1});\}\\
+| nonemptyexprs SEMICOLON expr /* récursif !*/ \{ \$\$ = std::move(\$1); \$\$push\_back(\$3);\};
+}
+
+Il peut y avoir des ambiguïtés sur les règles : $4+2\times 3$ doit-il être compris $(4+2)\times 3$ ou $4+(2\times 3)$ ? On doit en informer Bison : il faut définir la \emph{priorité} des opérateur et leur associativité ($4+2+3$).
+
+Pire, il existe des grammaires intrinsèquement ambiguë, ou plusieurs arbres peuvent être valides. Il faut donc les éviter au maximum !
+
+Pour appliquer les règles de priorité dans le bon ordre selon les priorité, Bison utilise un automate à pile.
+
+
+\subsection{Théorie : les parseurs SLR}
+\emph{Simple Left-to-right Rightmost derivation}
+
+On définit une grammaire $G$ par une règle de départ $S$. Par exemple : les terminaux sont ${a,b,\#}$ ou $\#$ est la fin du fichier, avec les règles suivantes :
+\begin{itemize}
+\item $S \to T \#$
+\item $T\to aTbT$
+\item $T\to U$
+\item $U\to a$
+\end{itemize}
+
+On réalise pour tout mot une \emph{dérivation}. On suppose qu'un curseur est présent sur les règles pouvant être appliqué. Cela consiste en réaliser la clôture transitive et empiler un à un les non-terminaux pouvant être appliqués.
+On va ensuite lire un caractère, puis avancer le curseur et supprimer les règles. On peux ensuite réitérer le processus tant qu'il reste des caractères et des lettres. On effectue ainsi des \emph{shift} et des \emph{reductions}.
+
+
+On définit le \emph{Follow Set} comme l'ensemble des symboles qui peuvent suivre un non-terminal. On effectue les réduction en fonction des follow sets, qui ne sont pas ambiguë pour un SLR.
+
+
+Par défaut, Bison utilise un LALR, qui est une extension un peu plus puissante que SLR. Le fichier en sortie donne l'automate dans \texttt{bison-report.txt}, qui donne les conflits shift/reduce et reduce/reduce.
+
+\section{Analyse Sémantique}
+\subsection{Variables}
+Une variable est une entité dans laquelle on stocke une valeur. On peut la stocker en RAM ou dans un registre, ou encore intermittente entre RAM et registres.
+
+En Tiger, les variables sont déclarées avec le mot-clef \texttt{var} dans la première partie d'une expression \texttt{let}, avec un type implicite ou explicite.
+
+On définit la \emph{durée de vie d'une variable} et sa \emph{portée} (\emph{scope}). Cela contient toutes les variables vivantes à ce moment là du programme. Dans Tiger, les scopes sont crées par les \texttt{for}, \texttt{let} et déclaration de fonctions. On recherche les variables du scope le plus proche vers le plus lointain pour éviter les phénomènes de \emph{masquage}, lorsque l'on utilise des variables de même nom. On ne peut donc pas utiliser un gros tableau $var \to values$.
+
+Il existe également des scopes sur les fonctions. Sauf que les fonctions peuvent être mutuellement récursives : on ne peut donc pas analyser ligne par ligne en ne se basant que sur les fonctions déjà rencontrées. Au sein d'un bloc contiguë de fonctions, \emph{toutes les fonctions sont visibles} !
+
+
+\subsection{Le binder}
+Le binder vérifie que tous les objets utilisés ont été déclarées et associent leur valeur à leur déclaration.
+Dans l'AST, \texttt{VarDecl} représente une déclaration, \texttt{Identifier} une utilisation de la variable. Le binder est un visiteur qui traverse l'arbre pour construire les scopes. Il va chercher les variables utiliser dans \texttt{Identifier} en cherchant dans le scope le plus proche. Il associe ensuite à chaque \texttt{Identifier} une référence vers le bon \texttt{Vardecl}, ou renvoie une erreur lorsque cela n'est pas possible.
+
+On va représenter les scopes par un \texttt{chain map} : une pile (liste chainée) de map $var \to value$.
+
+On va réaliser la même chose pour les fonctions.
+
+En sortie, on obtient un AST décoré par les déclarations. On a donc un lien vers la déclaration, qui est l'identifiant unique de l'emplacement mémoire utilisé.
+
+
+\paragraph{Soucis}
+Il peut y avoir des fonctions récursives !
+
+
+\subsection{Les frames}
+Il faut donc conserver en mémoire les environnement des fonctions et allouer des espaces mémoires différents pour chaque variable locale d'une fonction. Il faut donc une structure pour chaque appel de fonction, et donc une structure de taille arbitrairement grande : on choisit une pile, où \emph{frame}.  Historiquement, la pile descend alors que le tas monte. Il ne faut \emph{surtout pas} confondre \emph{frame} et \emph{scope}. Un scope est lexical (blocks du programme), alors que les scopes sont présent à l'exécution.
+
+Une frame associe donc à chaque \texttt{varDecl} sa \texttt{Value}. Chaque frame va contenir un pointeur \texttt{up} contenant l'adresse de la frame parente ainsi que les valeurs des variables concernées. Le binder va associer chaque variable à sa \texttt{varDecl}, mais la fonction va empiler ses variables au runtime. On ne va regarder que les variables locales déclarée dans la précédente frame. Sauf que ce n'est pas le cas : il faut pouvoir remonter ! D'où le pointer \texttt{up}, qui indique dans quel scope regarder pour accéder à une variable non déclarée dans la frame courante. Le pointeur \texttt{up} pointe donc vers la fonction \emph{contenante} et \emph{attention ce n'est PAS la fonction appelante} (cas des fonctions récursives justement !). Cela s'appelle un \emph{static link}.
+
+
+\paragraph{Remarque}
+Il existe une second manière de faire, plus courante dans les langages fonctionnels. On rajoute des arguments fantômes aux fonctions, qui représentent l'intégralité des variables utilisées (on convertie les variables extérieures en variable d'arguments).
+\bigskip
+
+On rajoute dans l'AST une \emph{profondeur} qui grandit avec les déclaration imbriquées de fonction. La différence de profondeur entre l'utilisation d'une variable/fonction et sa déclaration donne alors le nombre de frame à remonter via les pointeurs \texttt{up} pour obtenir la frame contenant la déclaration de la variable. On parle alors de \emph{variable échappée}.
+
+\paragraph{Problème} On ne connait pas à la compilation l'adresse de la frame appelante ! On va donc le rajouter comme argument fantôme à chaque fonction, représentant l'adresse du cadre contenant. Dans le cadre d'un fonction récursive, le même pointeur est donc passé à chaque appel ! Le cadre à passer est choisi statiquement : si la fonction est déclarée à la même profondeur, on passe un pointeur vers notre propre frame, sinon lorsque la fonction est définie $k$ niveau au-dessus, on passe une pointeur vers la frame un niveau au-dessus du notre.
+
+\subsection{Le typage}
+Tiger est un langage \emph{statiquement typé}, c'est-à-dire que le type de chaque objet est bien connu à la compilation. Le type peut être définit de manière explicite ou implicite, mais il reste néanmoins présent.
+
+Le type checker a donc deux rôles : faire de l'inférence de type et de la vérification de type. Il existe trois types en Tiger : entier, string et void (ne retourne rien). A chaque entité est associé un type, et la cohérence des types doit être effectuée. Le type checker passe après les binder (il faut d'abord connaître les symboles !), et s'implémente par - ô surprise - un visiteur.
+
+\paragraph{Par exemple} 
+\begin{itemize}
+\item '$+$' n'opère que sur les entiers
+\item '$>$' doit prendre soit deux entiers soit deux strings
+\end{itemize}
+\bigskip
+
+En Tiger, toutes les expressions (litterals) ont un type, par exemple \texttt{if/then/else}. La règles est donc \texttt{if} \emph{entier} \texttt{then} \emph{type1} \texttt{else} \emph{type1}. On remplace alors \texttt{if/then} par un \texttt{if/then/else} avec le else vide (et donc then prend une expression de type void.
+
+Le typage d'une fonction est toujours explicite : soit on met rien (type void), soit on précise son type. De même, le type de chaque argument doit être explicite.
+
+Avec ces informations, ont peut ne typer qu'en une seule passe (type cascade).
+
+Dans certains langages, on ne connait pas à l'avance les types (mais on les types statiquement quand même). On va rassembler les objet de même type dans une \emph{clique}, et on assigne un type à la clique dès que l'on peut. Si un conflit de type arrive, une erreur se produit.
+
+
+\section{La représentation intermédiaire}
+\subsubsection{Introduction}
+Une représentation intermédiaire doit être simple et bas-niveau : on retire tous le sucre syntaxique. Il doit également être facilement optimisable, c'est à dire qu'il doit subsister suffisamment d'information pour réaliser des "raccourcis" dans le code. Il y a donc un compromis à faire. Par exemple, doit-il y avoir un type tableau ? Si oui, on peut facilement savoir si deux accès sont sur le même tableau, pratique pour optimiser. Si non, on ne peut pas faire aisément des optimisations comme la propagation de constantes ou la réduction de force.
+
+Comment représenter les variables ? On peut utiliser ou les registres virtuels ou via une pile. LLVM utilise des registres, permettant une analyse de dépendance simple et des optimisations plus faciles. Pour une pile, la génération de code et l'interprétation est plus simple (pas de notions de nommage), ce qui est le cas des machines virtuelles Java.
+
+Une autre question est si la représentation du langage doit être plat ou hiérarchique (doit-on garder une structure d'arbre ?).
+\bigskip
+
+On va devoir faire du \emph{lowering} ou \emph{concrétisation}, qui est le contraire de l'abstraction : transformer un AST en code IR. Par exemple, on va traduire des expressions en code 3-adresses. L'objectif final étant de se rapprocher au maximum de l'assembleur.
+
+Sur GCC, il y a plusieurs niveau d'IR : Generic $\to$ Gimple (registre + hybride hiérarchique/plat) $\to$ Gimple SSA $\to$ RTL (Register Transfer Langage, hybride Pile/Registre + hiérarchique, très proche du langage machine).
+
+\subsection{Le projet LLVM}
+A la base, LLVM est un projet académique qui avait pour but d'exécuter dans une machine virtuelle du code IR, puis on pouvait l'optimiser et la transcrire en assembleur. Le but était d'être modulaire au maximum. LLVM a été créé au début des années 2000, il a donc bénéficié de nombreuses expériences au niveau des langages (LLVM est en C++ vs GCC en C) et des théorie sur la compilation.
+
+Apple a mis beaucoup de ressources pour étendre le projet qui est devenu académique et industriel (problématiques de licence et de maintenabilité), et plus recemment Google.
+
+
+\subsection{LLVM IR}
+Il est prévu pour être compréhensible par l'humain. Il comprend le type void et i1/i8/i32 les types entier sur 1/8/32 bits. Il existe des types dérivé : i32* pour les pointeurs, void (i8) une fonction prenant en argument un i8 et retournant void ; ainsi que {i8,i16} une structure comprenant un i8 et un i16. @ dénomine les symboles globaux (visibles par l'extérieur). Il \emph{faut} une fonction \texttt{main}.
+Pour allouer sur la pile, on utilise \texttt{alloca}. Pour lire et écrire depuis un pointeur, on utilise \texttt{store} et \texttt{load}. On ne \emph{peut pas} directement utiliser le pointeur !
+\bigskip
+
+Pour les variables locales, on va directement les allouer sur la pile avec \texttt{alloca}. cela n'est peut-être pas optimal, mais il existe une optimisation \emph{mem2reg} qui permet de supprimer de code inutile.
+\bigskip
+
+
+On décompose le langage en \emph{Basic Block}, unité du code sans branchement, que l'on peut relier par le \emph{graphe de flot de contrôle}.
 
 \end{document}

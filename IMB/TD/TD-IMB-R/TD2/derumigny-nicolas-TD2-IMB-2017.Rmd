@@ -1,0 +1,254 @@
+---
+title: "IMC - TD n°2 : introduction à l'ACP avec `ade4`"
+author: "Nicolas Derumigny"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+library(MASS)
+library(ggplot2)
+library(tidyverse)
+library(ade4)
+# Thanks to http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+```
+
+## Les données
+
+```{r}
+data(survey)
+names(survey)
+```
+
+1. 
+```{r}
+survey.cc = survey[complete.cases(survey), ]
+```
+
+2.
+```{r}
+help(survey)
+```
+`Wr.Hand` est la distance en cm de l'extrémité du pouce à l'extrémité de l'auriculaire de la main utilisée pour écrire. `NW.Hnd` correspond à la distance en cm de l'extrémité du pouce à l'extrémité de l'auriculaire de l'autre main. `Height`est la taille de l'étudiant en cm.
+
+3.
+```{r}
+theme_blank <-  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+work <- ggplot(survey.cc) + geom_point(aes(x = Wr.Hnd, y = NW.Hnd, color= Sex)) + theme_blank
+work2 <- ggplot(survey.cc)  + geom_point(aes(x = Wr.Hnd, y = Height, color= Sex)) + theme_blank
+work3 <- ggplot(survey.cc)  + geom_point(aes(x = NW.Hnd, y = Height, color= Sex)) + theme_blank
+multiplot(work, work2, work3, cols = 2)
+```
+
+Les tailles des mains semblent fortement corrélées, ce qui est peu surprenant. De plus, les hommes ont des mains plus grandes que le femmes et sont globalement plus grands, ce qui est également logique. Enfin, la taille semble être corrélée avec la taille des mains (quelle que soit la main), bien que cela soit moins marquée que la corrélation main d'écriture/autre main.
+
+## Centrage et réduction
+4.
+```{r}
+survey.cc.g = survey.cc %>%  select(Wr.Hnd, NW.Hnd, Height, Age, Pulse) %>% gather(key = Variables, value = Values)
+work <- ggplot(survey.cc.g) + geom_boxplot(aes(x = Variables, y = Values))
+plot(work)
+```
+
+On remarque que `Age`, `NH.Hnd` et `Wr.Hnd` ont des distributions très similaires. A l'invers, rien n'est déductible de `Height` et `Pulse`.
+
+5. 
+```{r}
+survey.cc.center <- (survey.cc %>% select(Wr.Hnd, NW.Hnd, Height, Age, Pulse) %>% scale(center = TRUE, scale = FALSE))[,]
+survey.cc.g <- as.data.frame(survey.cc.center) %>% gather(key = Variables, value = Values)
+work <- ggplot(survey.cc.g) + geom_boxplot(aes(x = Variables, y = Values))
+plot(work)
+```
+ L'étalement des boxplots est très différent, ce qui n'est pas pratique pour les comparer.
+ 
+ 
+6.
+```{r}
+survey.cc.center <- (survey.cc %>% select(Wr.Hnd, NW.Hnd, Height, Age, Pulse) %>% scale(center = TRUE, scale = TRUE))[,]
+survey.cc.g <- as.data.frame(survey.cc.center) %>% gather(key = Variables, value = Values)
+work <- ggplot(survey.cc.g) + geom_boxplot(aes(x = Variables, y = Values))
+plot(work)
+```
+
+
+Ce graphe est davantage satisfaisant :  on peut y voir la dispersion de la variable `Age` vers les valeures positives, alors que les autres variables semblent mieux réparties.
+
+## ACP centrée réduite dans `ade4`
+7.
+```{r}
+survey.cc.numeric = survey.cc %>% select(Wr.Hnd, NW.Hnd, Pulse, Height, Age)
+acp <- dudi.pca(survey.cc.numeric)
+pve <- 100 * acp$eig/sum(acp$eig)
+cumsum(pve)
+```
+
+## ACP centrée réduite dans ade4
+### Représentation des individus
+8.
+```{r}
+s.label(acp$li, xax = 1, yax = 2)
+s.label(acp$li, xax = 1, yax = 3)
+s.label(acp$li, xax = 2, yax = 3)
+```
+
+
+9.
+```{r}
+s.class(dfxy = acp$li, fac = survey.cc$Sex, col = c("red", "blue"), xax = 1, yax = 2)
+s.class(dfxy = acp$li, fac = survey.cc$Sex, col = c("red", "blue"), xax = 1, yax = 3)
+s.class(dfxy = acp$li, fac = survey.cc$Sex, col = c("red", "blue"), xax = 2, yax = 3)
+```
+
+
+### Représentation des variables
+10.
+```{r}
+s.corcircle(dfxy = acp$c1)
+```
+
+11. On remarque que les tailles des mains sont très corrélées entre elles et avec la taille de l'individu. A l'inverse, le rythme cardiaque comme l'age ne semble pas jouer de rôle pour aucune de ces données. Par contre, le rythme cardaique est très fortement négativement corrélé à l'age : plus l'étudiant est agé et moin son pouls est bas, ce qui est logique.
+
+```{r}
+scatter(acp, clab.row = 0, posieig = "none")
+s.class(acp$li, survey.cc$Sex, col = c("red", "blue"), add.plot = TRUE, cstar = 0,
+clabel = 0, cellipse = 0)
+s.label(acp$li[106,], clab=1, add.p=T)
+```
+
+
+## Contribution à l'inertie
+12.
+```{r}
+inertia.dudi(acp)
+inertia.dudi(acp, col.inertia = TRUE)
+inertia.dudi(acp, row.inertia = TRUE)
+```
+
+De manière peu surprenante, l'axe 1 est dû principalement aux variable de taille (mains et individus). Le deuxième et le troisieme axe sont tous deux composé prinicpalement du rythme cardiaque et de l'age, ce qui est à nouveau peu surprenant. En ragardant les contributions relatives signées, le rythme cardiaque suit le signe inverse du poul sur l'axe secondaire, mais le même signe sur le troisième axe, d'oùu la nexessité de séectionner trois axes pour obtenir une reconstruction de l'information suffisante. L'individu 154 se démarque fortement des autres par sa contribution comme ligne (8.5 contre une valeur entre 0.1 et 2 pour le reste du groupe), ce que l'on avait déjà constaté sur les représentations graphiques (position très excentrée). En regardants les contribution absolues, elle contribue majoritairement aux axes 2 et 3.
+
+
+# Exercice en autonomie
+1.
+```{r}
+data(deug)
+summary(deug$result)
+```
+(Est-ce vraiment la réponse ?????) Les notes vont de D à A+.
+
+2.
+```{r}
+vectorValid <- rep(NA,104)
+toValidate <- sum(deug$cent)
+for (i in 1:104)
+{
+  # vectorValid[i] = TRUE
+  # for (j in 1:9)
+  # {
+  #   vectorValid[i] = vectorValid[i] && (deug$tab[i,j]>deug$cent[j])
+  # }
+  somme <- sum(deug$tab[i,1:9])
+  vectorValid[i] <- (somme >= toValidate)
+}
+length(which(vectorValid))
+
+```
+(Comment valident-on ? Personbellement, je valide à 12/20 avec compensation des matières si la note est plus grande que 7). En supposant qu'il faille une moyenne gloable supérieure ou égale à 10 pour valider, il suffit que la somme des notes soit plus grande que la somme des notes minimales pour valider (car tout est coefficienté). En suivant cette méthode, 65 élèves valident.
+
+3.Les coefficients de chaque matière sont
+```{r}
+deug$cent/10
+```
+
+```{r}
+data_frame_cause_r_is_annoying_with_data_structures <- data.frame(
+  data=cbind(as.vector(deug$cent), names(deug$cent)))
+work <- ggplot(data_frame_cause_r_is_annoying_with_data_structures) + aes(x=data.2, y=data.1) + geom_col()
+plot(work)
+```
+
+4. Il s'agit probablement d'une license mention mathématique du parcours mathématique et économie (cf http://licence-math.univ-lyon1.fr/lib/exe/fetch.php?media=schema_math_eco.pdf)
+
+5. 
+```{r}
+for (i in 1:8) 
+{
+  data_work <- data.frame(polop = deug$tab[,i]/deug$cent[i]*10)
+  work <- ggplot(data=data_work) + aes(x=polop) + geom_bar() + ggtitle(names(deug$cent)[i])
+  plot(work)
+}
+data_work <- data.frame(polop = deug$tab[,9])
+work <- ggplot(data=data_work) + aes(x=polop) + geom_bar() + ggtitle(names(deug$cent)[9])
+plot(work)
+
+```
+
+Les matières les plus difficiles sont informatiques et probabilité. Si je n'avais qu'une seule matière à réviser, ce serait l'économie car elle a le plus haut coefficient.
+```{r}
+names(deug$cent)[which.max(deug$cent)]
+```
+
+6. Un cinquième de la classe a zéro, ce qui est parfaitement logique lorsque l'on voit que la matière n'est pas obligatoire (nécessite 0 pour valider avec 10/20).
+
+7. 
+*Correction*: Il fallait désactiver le centrage-réduction afin de conserver les écarts relatifs entre notes.
+```{r}
+pca <- dudi.pca(deug$tab, col.w = deug$cent/sum(deug$cent))
+```
+
+8.
+```{r}
+s.corcircle(dfxy = pca$c1)
+```
+Le premier axe représente les bons élèves contre les mauvais, le second resprésente les littéraires contre les scientifiques.
+
+9.
+```{r}
+pca <- dudi.pca(deug$tab)
+s.corcircle(dfxy = pca$c1)
+```
+Les variables sont toutes dans le cercle, ce qui est plus logique au vu de la définition donnée (problèle au niveau des coefficients ?). De plus, on prends en compte le sport, qui était auparavant nul (coefficient de zero).

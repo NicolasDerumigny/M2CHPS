@@ -37,6 +37,12 @@ work <- ggplot(data = mpg) + geom_point(aes(x=cyl, y=hwy))
 plot(work)
 ```
 
+```{r}
+work <- ggplot(data = mpg) + geom_boxplot(aes(x=as.factor(cyl), y=hwy))
+plot(work)
+```
+
+
 6) Certains fabriquant peuvent proposer à la vente certains modèles moins consommateurs (et donc une consommation faible en mile par galon) du fait de technologies plus ou moins avancées.
 
 7)
@@ -47,7 +53,7 @@ plot(work)
 On remarque que, effectivement, les points hors tendance sont principalement de marque audi et chevrolet. On pourrait affiner en affichant les modèles, mais cela alourdit le graphique à cause du trop grand nombre de valeurs possibles.
 
 ```{r}
-work <- ggplot(data = mpg) + geom_point(aes(x=displ, y=hwy, colour = model))
+work <- ggplot(data = mpg) + geom_point(aes(x=displ, y=hwy, colour = class))
 plot(work)
 ```
 
@@ -59,10 +65,20 @@ plot(work)
 
 On remarque une faible proportion de véicules à propulsion (arrière), alors que les 4x4 et les traction (avant) se partagent à peu près équitablement le reste de l'échantillon.
 
+**Correction :**
+```{r}
+work <- ggplot(data = mpg) + geom_bar(aes(x = hwy, fill = class))
+plot(work)
+```
+
+On remarque qu'il s'agit d'une distribution *bimodale* : on peut diviser en deux catégories les voitures : haut rendement et faible rendement (ici il semble s'agir d'une somme de deux gaussiennes).
+
 ## Quantiles
 
 ```{r}
 quantile(x = mpg$hwy)
+quantile(x = mpg$hwy, probs = 0.3)
+quantile(x = mpg$hwy, probs = 0.99)
 ```
 
 Les voitures de l'échantillon ont une autonomie entre 12 et 44 miles par galons, un quart moins de 18 mpg, une moitié moins que 24 mpg et trois quart moins de 27 mpg.
@@ -70,6 +86,14 @@ Les voitures de l'échantillon ont une autonomie entre 12 et 44 miles par galons
 Boîte à moustache :
 ```{r}
 work <- ggplot(data = mpg) + geom_boxplot(aes(x = class, y = hwy))
+plot(work)
+```
+
+
+**Correction :**
+On peut également utiliser l'affichage `geom_violin` :
+```{r}
+work <- ggplot(data = mpg) + geom_violin(aes(x = class, fill = class, y = hwy)) + geom_boxplot(aes(x = class, y = hwy, colour = class), width = 0.4) + theme(legend.position = "none")
 plot(work)
 ```
 
@@ -84,8 +108,25 @@ for (carac in c("displ", "year", "cyl", "cty", "hwy")) {
 }
 ```
 
+**Correction :**
+On peut églament sélectionner des données par l'opérateur `%>%` qui est une sorte de pipe. Par exemple :
+```{r}
+mpg.quanti = mpg %>% select( displ, year, cyl, cty, hwy)
+data.frame(
+  median = apply (mpg.quanti, MARGIN = 2, median),
+  mean = apply (mpg.quanti, MARGIN = 2, mean),
+  min = apply (mpg.quanti, MARGIN = 2, min),
+  max = apply (mpg.quanti, MARGIN = 2, max),
+  IQR = apply (mpg.quanti, MARGIN = 2, IQR),
+  sd = apply (mpg.quanti, MARGIN = 2, sd)
+)
+```
+
+
 ### Variables qualitatives
 Les variables qualitatives nominales sont `manufacturer`, `model`, `drv` (on peut supposer que 4x4$>$2 roues motrices, mais il est impossible d'ordonner traction et propulsion) `trans`, `fl` et `class`. Il n'y a donc aucune variable qualitative ordinale.
+
+**Correction :** on peut considérer que `displ` et `cyl` sont des variables qualitatives ordinales car elles sont à valeurs discrètes.
 
 ```{r}
 work <- ggplot(mpg) + geom_histogram(aes(x=class, fill=drv), stat="count")
@@ -123,6 +164,16 @@ for (carac1 in iter) {
   corr[[carac1]]=vect
 }
 work <- ggplot(data = corr) + geom_text(aes(x = displ, y = year, label = iter))
+plot(work)
+```
+
+
+**Correction :**
+On peut utiliser une heatmap pour représenter ces corrélations (cf ecampus). On ne peut pas utiliser directment une `data.frame` car il faut un `tidy_dataset`. On peut transformer un `data.frame` en `tidy_dataset` par la fonction `gather`.
+```{r}
+corr2 = rownames_to_column(df = corr, var = "var1")
+corr2.g = corr2 %>% gather(key = var2, value = Correlation, -var1, displ, year, cyl, cty, hwy)
+work <- ggplot(data = corr2.g) + geom_tile( aes(x = var1, y = var2, fill = Correlation), color = "white") + scale_fill_gradient2(low = "royalblue3", mid = "white", high = "brown2")
 plot(work)
 ```
 

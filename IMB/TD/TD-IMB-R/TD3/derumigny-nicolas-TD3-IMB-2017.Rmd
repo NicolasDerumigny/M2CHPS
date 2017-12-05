@@ -1,0 +1,120 @@
+---
+title: "IMC - TD n°3 : Manipulation des données et apprentissage statistique"
+author: "Nicolas Derumigny"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+library(ggfortify)
+library(lasso2)
+data(Prostate)
+set.seed(103)
+library(ggplot2)
+library(tidyverse)
+# Thanks to http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+```
+
+# Les données
+```{r}
+?Prostate
+summary(Prostate)
+```
+# Entrainement à la manipulation de données
+1.
+```{r}
+Prostate.norm=data.frame(scale(Prostate)) %>% gather(key = Variables, val = Values)
+ggplot(data=Prostate.norm) + aes(x = Variables, y=Values) + geom_boxplot()
+```
+
+2. 
+```{r}
+filter(Prostate, age > 70)
+filter(Prostate, gleason == 6 | gleason == 7)
+filter(Prostate, lpsa > 3 & age < 45)
+filter(Prostate, between(age, 50, 55))
+```
+
+3.
+```{r}
+Prostate %>% arrange(desc(lpsa))
+```
+
+4.
+```{r}
+Prostate %>% arrange(desc(lcavol))
+Prostate %>% arrange(desc(lweight))
+```
+
+On ne trouve pas le même ordre.
+
+5.
+```{r}
+summarise(
+  group_by(
+    Prostate,
+    gleason   
+  )
+)
+```
+
+6.
+```{r}
+for (index in names(Prostate)) {
+  summarise(
+    group_by(
+      Prostate,
+      gleason
+    ),
+    n(),
+    mean(get(index)),
+    sd(get(index))
+  )
+}
+```
+
+

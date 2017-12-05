@@ -76,9 +76,17 @@ int main(){
 	start = clock();
 	//program here
 	end = clock();
-	printf("%d\n", (end-start)/CLOCKS_PER_SEC));
+	printf("%f\n", (end-start)/CLOCKS_PER_SEC));
 }
 \end{lstlisting}
+\end{frame}
+
+\begin{frame}{Complexity}
+\begin{itemize}
+\item {Time:} The matrix-vector product dominates $\Rightarrow$ $O(n^2)$
+\bigskip
+\item {Space:} The storage of $A$ dominates $\Rightarrow$ $O(n^2)$
+\end{itemize}
 \end{frame}
 
 \section{Results}
