@@ -105,7 +105,7 @@ summarise(
 6.
 ```{r}
 for (index in names(Prostate)) {
-  summarise(
+  print(summarise(
     group_by(
       Prostate,
       gleason
@@ -113,8 +113,100 @@ for (index in names(Prostate)) {
     n(),
     mean(get(index)),
     sd(get(index))
-  )
+  ))
 }
 ```
 
+# Modèle Linéaire
 
+## Vérification des données et descriptions élémentaire
+### Premières représentations graphiques
+```{r}
+quantile(Prostate$lcavol)
+```
+
+```{r}
+ggplot(data=Prostate) + aes(x=lpsa, y=lcavol, color=age) + geom_point()
+```
+Le cancer semble effetivement corrélé à l'antigène, et ce quel que soit l'âge.
+```{r}
+ggplot(data=Prostate) + aes(x=lcp, y=lcavol, color=svi, size=gleason) + geom_point()
+```
+On remarque également une corrélation entre le log de la `capsular penetration` et la taille du cancer. EN outre, les personne a faible score de gleason ont n'ont pas d'invasion de la vésicule seminale ; et sont moins propices au gros cancers.
+
+### PCA
+```{r}
+library(ade4)
+pca = dudi.pca(Prostate %>% select(lcavol,lweight,age,lbph,lcp,lpsa))
+pve <- 100 * pca$eig/sum(pca$eig)
+cumsum(pve)
+```
+```{r}
+s.label(pca$li, xax = 1, yax = 2)
+s.corcircle(dfxy = pca$c1)
+```
+
+Il n'y a pas d'anomalie notable ; et on remarque principalement deux caractéristiques sont extraites, couvrant 68% de l'information seulement: l'antigène et la capsular penetration sont fortement lié à la taille du cancer, quand l'age, le poid de la prostate et la `benign prostatic hyperplasia amount` ne sont pas reliés significativement. On remarque que les 90% de variances ne sont reproduite qu'avec plus de 4 axes, ce qui montre que l'on a affaire à des données peu corellées.
+
+```{r}
+ind.test = sample(nrow(Prostate), size = round(nrow(Prostate)*0.25))
+Prostate.app = Prostate[-ind.test,]
+Prostate.test = Prostate[c(ind.test),]
+modlin = lm(lpsa ~ ., data = Prostate.app)
+summary(modlin)
+```
+
+Les valeurs significatives sont lcavol, lweight et svi.
+
+2. L'erreur standard sur les résidu est 0,7407
+
+3. R^2 = 0,6434
+
+```{r}
+mesure_predict=data.frame(predict = predict(modlin, Prostate), measured = Prostate$lpsa)
+ggplot(data=mesure_predict) + aes(y=predict, x=measured) + geom_point(color="blue")
+```
+
+```{r}
+autoplot(modlin, label.size = 3)
+```
+
+On a une p-value du teste de F 8,58.10^-12 (probabilité d'obtenir ce résultat sous l'hypothèse nulle) : on a donc un modèle significatif.
+
+```{r}
+library(MASS)
+modselect_b = stepAIC(modlin, ~., trace=TRUE, direction=c("backward"))
+summary(modselect_b)
+```
+
+```{r}
+mod0 = lm(lpsa ~ 1, data = Prostate)
+modselect_f = stepAIC(mod0, lpsa ~ lcavol + lweight + age + lbph + svi +
+lcp + gleason + pgg45, data = Prostate,
+trace = TRUE, direction=c("forward"))
+summary(modselect_f)
+```
+
+```{r}
+modselect = stepAIC(modlin, ~., trace = TRUE, direction = c("both"))
+#both est l'option par défaut
+summary(modselect)
+```
+
+```{r}
+modselect_BIC = stepAIC(modlin, ~., trace = TRUE, direction = c("both"),
+k = log(length(Prostate$lpsa)))
+summary(modselect_BIC)
+```
+
+L'AIC forward est le meilleur choix, il réalise à la fois le minimum de l'AIC mais aussi le maximum du R^2 ajusté et le minimum de la p-valeur de l'hypothèse F.
+
+```{r}
+sum(abs(predict(modlin, Prostate.test)-Prostate.test$lpsa))
+sum(abs(predict(modselect_b, Prostate.test)-Prostate.test$lpsa))
+sum(abs(predict(modselect_f, Prostate.test)-Prostate.test$lpsa))
+sum(abs(predict(modselect, Prostate.test)-Prostate.test$lpsa))
+sum(abs(predict(modselect_BIC, Prostate.test)-Prostate.test$lpsa))
+```
+
+On trouve sans surprise une meilleure erreur de reconstruction pour l'AIC forward.

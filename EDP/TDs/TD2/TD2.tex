@@ -1,0 +1,80 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+\usepackage{caption}
+%\usepackage{pgfplots}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{footnote}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{multirow}
+\usepackage{amsfonts}
+\usepackage[boxed,linesnumbered,noend]{algorithm2e}
+\usepackage{qcircuit}
+\usepackage{enumerate}
+\usepackage{eurosym}
+
+\newtheorem{thm}{Théorème}
+\newtheorem{prop}{Propriété}
+\newtheorem{lemma}{Lemme}
+\newtheorem{defi}{Définition}
+\newtheorem{coro}{Corollaire}
+
+\SetKwBlock{Label}{}{}
+\SetKwRepeat{Do}{do}{while}
+\SetKwBlock{Void}{void}{}
+\SetKwBlock{Struct}{struct}{}
+
+\setlength{\oddsidemargin}{0pt}
+% Marge gauche sur pages impaires
+\setlength{\evensidemargin}{0pt}
+% Marge gauche sur pages paires
+\setlength{\textwidth}{470pt}
+% Largeur de la zone de texte 
+\setlength{\topmargin}{0pt}
+% Pas de marge en haut
+\setlength{\headheight}{13pt}
+% Haut de page
+\setlength{\headsep}{10pt}
+% Entre le haut de page et le texte
+\setlength{\footskip}{40pt}
+% Bas de page + séparation
+\setlength{\textheight}{630pt}
+% Hauteur de la zone de texte
+
+\title{Evaluation de performances - TD2}
+\author{Nicolas Derumigny}
+\date{}
+
+\newcommand{\note}{\medskip\noindent\underline}
+
+\begin{document}
+
+\paragraph{Ex 1:}
+\begin{enumerate}
+\item On trouve $40\%$ d'écritures pour $50\%$ de lectures
+
+\item Les accès sont courts : pas plus de 15 blocs par requête, et une moyenne de 8 blocs par requêtes. La moyenne reste aux alentours de 8 : 7,985 pour les écritures et 8,004 pour les lectures. Le coefficient de variation vaut 0.54 dans les deux cas.
+
+\item Les tailles des requêtes sont équidistribuées sur toues les valeurs entières entre 1 et 15
+
+\item L'écart interquartile vaut 8, ce qui est logique avec le graph des décilles ($12-4$).
+
+\item Le mode est la valeur la plus présente dans la série de donnée, elle vaut 1 pour les lecture, c'est loin de la moyenne ce qui la fait légèrement descendre
+
+\item 
+
+
+\end{enumerate}
+
+
+
+\end{document}

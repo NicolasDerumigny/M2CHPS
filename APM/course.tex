@@ -170,4 +170,129 @@ Le nombre de registre est limité dans un bloc (il est limité par SM). Pour opt
 Chaque device contient des \emph{Compute Units} qui contiennent des \emph{elements}. Le principe d'exécution est le même que CUDA. L'appel d'un noyau de calcul suit le même principe, et on utilise des grilles et work-group.
 
 Le code des kernels est compilés à la volé à l'exécution. De plus, le code est plus verbeux, portable et bas niveau. Cependant OpenCL est moins rapide que CUDA (volonté de NVIDIA...).
+
+\section{APIs CUDA et Programmation Multi-GPU}
+\subsection{Différentes APIs pour CUDA}
+Il existe en fait deux APIs pour CUDA, une haut et une bas niveau, la bas niveau étant plutôt réservée aux programmeurs de bibliothèques. On peut même exécuter directement des bibliothèques très optimisées sans passer par CUDA (transparence totale, comme cuBLAS). L'API runtime est celle utilisée en TP. Elle est haut niveau (cudamalloc, cudafree, etc). Il existe également l'API driver, plus verbeuse et destinée à des utilisateurs plus avertis.
+
+Les fonctions de l'API runtime sont préfixés par \texttt{cuda}. Le niveau d'abstraction est élevé, et permet de ne pas exposer tous les mécanismes CUDA aux utilisateurs.
+
+A contrario, l'API driver nécessite une plus grande expertise, et peut isoler les développements CUDA dans un bibliothèque du reste du programme. L'idée est de pouvoir totalement s'abstraire de ce qui est fait dans le reste du code, afin de ne pas être gêné par le code de l'utilisateur (il ne faudrait pas que les perf sont amoindries à cause d'opération a priori indépendantes de l'utilisation de l'a bibliothèque).
+
+Les fonction de l'API driver sont préfixés par \texttt{cu} : \texttt{cuMemAlloc}, \texttt{cuMemcpyDtoH}, ...
+
+\subsection{Contextes CUDA}
+Il s'agit de la structure interne de CUDA attaché à un GPU. De base, tout va s'exécuter sur le GPU 0. En fait, le runtime crée un contexte par défaut, attaché au GPU 0. A chaque appel de CUDA, les fonctions vont chercher dans le contexte actuelle sur quel GPU appliquer les fonctions.
+
+Un contexte encapsule tous les objets relatifs au bon fonctionnement de CUDA : allocations mémoires, espace d'adressage, stream CUDA, événements CUDA.
+
+Il existe deux types de contextes : les contextes (calssiques) et les contextes \emph{primaires}. L'API runtime ne manipule que des contextes primaires, alors que l'API driver utilise des contextes classiques. Chaque type de contexte est stocké comme dans une pile (le runtime CUDA n'est pas open source donc on ne sais pas exactement le fonctionnement interne).
+
+\subsubsection{Contextes primaires}
+Les contextes primaires sont disponibles depuis CUDA 4.0. Il s'agit d'un contexte commun à tous les threads d'un processus ciblant le même GPU. Cela permet de réutiliser les données d'un thread à l'autre et éviter de stocker plusieurs fois les mêmes données sur GPU.
+On peut créer un nouveau contexte primaire par l'appel de \texttt{cudaSetDevice()}. Si un contexte attaché au GPU existe déjà, on va simplement aller le rechercher.
+
+On peut le voir comme :
+\begin{itemize}
+\item Une pile de contexte par processus UNIX, qui fonctionne comme une variable globale
+\item (Pas dans les versions les plus récentes de CUDA) tous les threads d'un processus sont attachés au même contexte. Actuellement il s'agirait plutôt d'une liste.
+\end{itemize}
+
+\subsubsection{Les contextes classique}
+Il s'agit des contextes par défaut de l'API avant CUDA 4.0. Le contexte est privé à chaque thread OS. On peut créer un nouveau contexte par l'appel à \texttt{cuCtxCreate()}, en spécifiant le GPU attaché. \emph{Peu importe l'état de la pile}, on crée bien \emph{toujours} un \emph{nouveau} contexte. Il faut donc bien faire attention du contexte dans lequel on a appelé de kernel !
+
+Il existe une pile de contextes par threads systèmes, stockée dans la TLS (thread local storage) du thread noyeau. Il faut donc faire la gestion des contextes \emph{à la main}.
+
+Il y a une \emph{précédence} sur les contextes primaires : les contextes classiques sont prioritaires sur les contextes primaires. Il faut donc faire attentions aux situations de famine...
+
+
+\subsection{Programmation Multi-GPU}
+\subsubsection{Sélection d'un GPU en CUDA}
+Comme vu précédemment :
+\begin{itemize}
+\item \texttt{\_\_host\_\_ cudaError\_t cudaSetDevice(int device)} où \texttt{device} est le numéro du device utilisé pour les exécutions. Attention, ce numéro est l'identifiant CUDA ! Il faut également ne pas oublier que tous les pointeur utilisé auparavant deviennent \emph{non valide}. Cette fonction vérifie s'il n'existe pas déjà un contexte déjà associé au device demandé. Si il existe une pile de contextes classiques, il va prendre le premier contexte classique associé au GPU ou en créer un s'il n'y en a pas ! Sinon, il sélectionne le contexte primaire correspondant ou en créer un s'il n'en existe pas. On ne peut donc pas utiliser le même GPU sur le même noeud avec le même processus (surtout pour utiliser le même GPU que celui en train d'être exploité par une bibliothèque CUDA). Si le device n'existe pas, il semble que les codes sont exécutés sur le device par défaut (0).
+
+Pour obtenir le nombre de devices utilisables, on utilise
+\texttt{\_\_host\_\_device\_\_cudaError\_t cudaGetDeviceCount(int * count)} retournant le nombre de cartes supportant CUDA 2.0.
+
+\item \texttt{CUresult cuCtxCreate(CUcontext *pctx, unsigned int flags, CUdevice dev)} où \texttt{pctx} le handler du nouveau contexte, \texttt{flags} les options de créations et \texttt{dev} le périphérique à utiliser. Le contexte est alors pushé en tête de pile de thread appelant. Pour manipuler la pile, on utilise les fonctions \texttt{CUresult cuCtxPopCurrent(CUcontext *pctx)} enlevant le denier contexte de la pile et le renvoyeant dans \texttt{pctx}. A l'inverse, la fonction \texttt{CUresult cuCtxPushCurrent(CUcontext ctx)} permet de mettre \texttt{ctx} sur la pile. Les appels de fonctions se font donc sur le contexte en tête de pile.
+
+D'autres fonctions sont disponibles : \texttt{cuCtsGetCurrent} retournant le contexte courant, \texttt{cuCtxGetDevice()} retournant l'ID du device courant et \texttt{cuCtxSetCurrent()} pour remplacer le contexte courant (pop + push)
+
+La gestion fine des contextes classique doit donc  se faire à la main, à moins d'utiliser l'API runtime (\texttt{cudaSetDevice()} va chercher tout seul dans la pile !) 
+\end{itemize}
+
+\subsubsection{CUDA et MPI}
+
+Par défaut, tous les processus MPI utilisent le GPU par défaut (GPU 0). Au sein d'un noeud, le \emph{même} GPU sera tout le temps utilisé ! Le problème ne change pas si l'on fait un setdevice constant. On peut donc tenter un \texttt{cudaSetDevice(rank)}. Il y a cependant un léger soucis si le rang maximal est plus grand que le nombre de GPU, que l'on peut facilement contourner par un modulo (Roud-Robin). Cela permet de maximiser la répartition des processus MPI sur les différents GPUs disponibles, mais cela ne maximise pas forcément l'occupation de ces GPU. L'affectation la plus efficace est donc machine-dépendant à cause de l'effet NUMA.
+
+de plus, les processus utilisant le même GPU ne partagent pas le même espace d'adressage : il faudrait donc partager le même contexte, ou mettre en place des redondance de données. Dans l'idéal, il faudrait mettre en place un broadcast du contexte, non prévu par CUDA. Il faudrait sinon utiliser des thread primaires, à condition d'utiliser des threads OS (APMI ou MPC).
+
+\subsubsection{CUDA et OpenMP}
+Deux méthodes sont possible.
+\begin{itemize}
+\item Avec l'API runtime, avec des contextes primaires, sans soucis de communications inter-threads
+\item Avec l'API drivers, on récupère le rang et on crée le contexte ne fonction du rang. Le contexte sera par contre indépendant par thread, la mémoire du GPU ne sera pas partagée !
+\end{itemize}
+
+On retrouvera les mêmes problématiques qu'en MPI+CUDA. Cela ne maximise pas forcément l'utilisation des GPU (nécessite de connaître la charge de travail).
+
+Un bonne manière est d'utiliser MPI + OpenMP + CUDA :
+\begin{itemize}
+\item Utiliser un process MPI par GPU disponible
+\item Répartir sur les threads via OpenMP
+\item On utilise directement l'API Runtime et des contextes primaires.
+\end{itemize}
+
+Cependant, chaque appel CUDA dans un processus MPI sera sérialisé avec les autres appels des autres threads. Au sein d'un stream, tout est sérialisé ! Les kernels sur le même stream vont juste se faire enfiler dans la file du stream en attendant de se faire exécuter. Pour palier à ce problème, on peut utiliser un stream par unique à chaque thread. On ne peut cependant utiliser que 16 streams maximum !
+
+Il faut (toujours) régler l'effet NUMA en plaçant les processus sur les coeurs attaché au GPU. Parfois ce n'est pas possible (2 GPU sur la même socket).
+
+La répartition des processus n'est donc pas toujours celle qui maximise les performances CPU ! De plus, des bibliothèques externes peuvent manipuler les GPU et contextes cassant la répartition optimale.
+
+\subsection{NCCL}
+Permet, à la manière de MPI, de déplacer des données d'un GPU à un autre. On regroupe les GPU dans des \emph{clique}. On reprend les même collectives et quasiment les même signatures qu'MPI. Les appels sont asynchrones, et il faut faire bien attention à qui fait quoi lors d'une utilisation conjointe avec MPI.
+
+\section{Programmation par directives et Task-Scheduling}
+Programmation par directives : le code est annoté par l'utilisateur de manière à ce que le code soit enveloppé à la compilation par certaines fonctions.
+\subsection{Programmation par directives}
+\subsubsection{OpenMP}
+%TODO revoir ça...
+Modèle fork-join : au début d'une région parallèle, on réveille/crée les threads, on exécute puis on les tue/endors.
+
+La programme est très simple, il suffit de connaitre un pragma et deux fonctions. Il faut cependant synchroniser manuellement, et d'autre options sont possible afin de d'exécuter séquentiellement certaines sections ou changer certains options.
+
+Pour envoyer des données, on utilise la directive \texttt{\#pragma omp target data if() device() map() use\_device\_ptr()}. Elle a un scope (accolade ouvrante et fermante).
+
+Pour mettre à jour les données, on utilise \texttt{\#pragma omp target update ...}.
+
+Pour exécuter la région, on utilise \texttt{\#pragma omp target if() device() private() firstprivate() map() is\_device\_ptr() defaultmap() nowait depend()}. Elle contient un \texttt{omp target data} pour envoyer les données avant exécution. Les variables privées ne seront pas partagées entre les threads. Firstprivate permet en plus d'initialiser à la valeur précédente.
+\bigskip
+
+CUDA propose trois niveau de parallélisme, alors qu'OpenMP ne propose que deux niveaux : Team et Thread, le troisième étant implicite (nombre de team). La directive \texttt{\#pragma omp teams num\_teams() thread\_limit() default() private() firstprivate() shared() reeduction()}. 
+
+Jusqu'à présent, on utilisait \texttt{parallel} pour lancer une région parallèle. En fait, cette directive crée une seul team de threads, et chacun exécute la région parallèle. On a donc besoin de nouvelles directives. Le même problème se porte avec la directive \texttt{for}.
+
+On utilise alors la directive \texttt{\#pragma omp distribute private etc} qui se place avant une directive for. Cela permet de réparti la boucle sur les différentes teams.
+
+
+\subsubsection{OpenACC}
+Etait censé être un standard temporaire pour alléger la programmation CUDA+OpenCL, pour être intégré plus tard dans OpenMP. Les directives pour accélérateurs étaient tout de même légèrement différentes, et depuis, les deux standards coexistent, bien qu'il y ait des discussions de merge à ce sujet.
+
+Il s'agit une fois encore de pragma. Voir les slides pour les détails d'implémentation.
+
+La hiérarchie d'OpenACC définit des Gang qui contiennent des workers qui contiennent des vectors. 
+
+Attention, la hiérarchie des niveaux dépend totalement de l'implémentation du runtime !
+
+Il n'y a donc que deux directives, mais il faut bien savoir les utiliser !
+
+OpenACC possède en plus une directive \texttt{kernel} qui permet d'automatiser le parallélisme dans une région.
+
+
+\subsection{Task-scheduling}
+\emph{StarPU} est un runtime à base de tâches, organisées dans un graph. StarPu reconnait les architectures hétérogènes, et permet l'ordonnancement dynamique en évitant au maximum les transfert inutiles.
+
+
+
 \end{document}

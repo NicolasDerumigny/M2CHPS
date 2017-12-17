@@ -2,9 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-//#include <mpi.h>
+#include <assert.h>
 #define M 80
-
 
 clock_t mv_time = 0, p_scal_time = 0;
 
@@ -91,7 +90,18 @@ void arnoldi(
 }
 
 int main (int argc, char *argv[], char*env[]) {
-	//MPI_BEGIN();
+	double id[4] = {1,0,0,1};
+	double un[2] = {1,1};
+	int sizemat[2] = {2,2};
+	double *dstmat = malloc(2*sizeof(double));
+	prod_mv(dstmat,id,un,sizemat);
+	for (int i = 0; i<2; ++i) {
+		printf("%f\n", dstmat[i] - un[i]);
+	}
+	assert(prod_scal(un,un,2) == 2);
+	free(dstmat);
+
+
 	clock_t start, end;
 	int size[2] = {atoi(argv[1]),atoi(argv[1])};
 	double **dst, *matrix, *vector;

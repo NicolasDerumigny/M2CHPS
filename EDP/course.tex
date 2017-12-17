@@ -120,7 +120,7 @@ Le calcul de l'accélération par la loi l'Amdahl simple :
 avec $F_a$ la fraction parallélisable et $p$ le nombre de processeurs.
 
 Le calcul de l'accélération est plus juste par la \emph{loi d'Amdahl enrichie} :
-\[Acc = \dfrac{1}{(1-F_a}+\dfrac{F_a}{p} + C_t(F_a,p)\]
+\[Acc = \dfrac{1}{(1-F_a)+\dfrac{F_a}{p} + C_t(F_a,p)}\]
 
 Ou $C_t(F_a,p)$ est le coût liée à la parallélisation du programme (dispatch, etc).
 
@@ -271,5 +271,128 @@ Bonnes pratiques :
 \item Faire un bon plan d'expérience
 \item Analyser et interpréter les résultats (bonne échelle...)
 \end{itemize}
+
+
+\section{Equilibrage de la charge de travail}
+\subsection{Introduction}
+Il existe deux types de workload : \emph{réelles} ou \emph{synthétique}. Les réelles sont observées sur un système réel lors de l'exécution et unique à chaque lancement. Elles sont de grandes tailles et riches en détails, mais non répétables et d'extraction souvent difficile.
+A l'inverse, les charges synthétiques sont de tailles plus réduites et répétables, mais moins représentatives et parfois trop approximatives.
+
+\subsection{Sélection des charges}
+Cette étape est très importante pour avoir une évaluation correcte du système ou sa conception. Elle permet de déterminer l'utilité et l'exactitude des résultats obtenus par l'analyse.
+
+On doit alors se concentrer sur quatre points :
+\begin{itemize}
+\item Le service délivré : il faut rendre le service délivré indépendant du contexte
+\item Le niveau de détail : il vaut mieux le prendre au plus bas possible, car il est possible de revendre des traces ou d'en extraire après coup de nouvelles informations
+\item La représentativité des charges
+\item L'alignement temporel au sein des charges: deux niveaux faible et fort (et les intermédiaires) sont possibles : il s'agit de retracer les changement temporels dans le comportement du système. Si l'alignement est faibles, on ne regarde que la tendance, s'il est fort on retrace avec exactitude tous les événements survenus.
+\end{itemize}
+
+On définit le \emph{coefficient de variation} ou \emph{ecart type relatif} comme $\dfrac{\sigma}{\bar{X}}$
+
+\subsection{Workload synthétique}
+Le workload synthétique peut avoir de temps d'arrivés régulier ou non, en rafale, périodique.
+
+Pour une utilisation en rafale, les lois des temps d'arrivée sont en loi de poisson, et les tailles des rafales suivent une loi géométrique.
+
+
+Un benchmark est une portion d'un code utilisateur qui caractérise le mieux le comportement de cette application.
+
+\section{Introduction aux files d'attentes}
+Il s'agit d'un modèle mathématique basé sur des probabilités pour évaluer les performance d'un système client/serveur. Il y a donc un temps d'attente et un temps de service, ainsi qu'un flux d'arrivé qui rempli la file. La stratégie de gestion de la file est laissée libre au serveur.
+
+On définit le temps de service par 
+\[T_{serv} = \dfrac{1}{Tps\_moyen\_de\_service}\]
+Si le temps d'arrivé est bien plus important que le taux de service, le système se retrouve dans un état saturé et la théorie des files d'attentes ne peut s'appliquer. Il faut également toujours penser à confronter à la réalité afin de valider les hypothèses et approximations effectuées.
+
+On parle de
+\begin{itemize}
+\item Ressource ou Serveur pour le CPU (cas serveur de calcul), la mémoire (hiérarchie mémoire) ou le disque (I/O)
+\item Le client sera des jobs, des processus ou des requêtes d'entrée/sortie $\to$ charge de travail
+\end{itemize}
+
+Il existe différentes stratégies de sélections : \begin{itemize}
+\item FIFO
+\item LIFO
+\item Round robin
+\end{itemize}
+
+
+Dans un réseau réel, les files et les serveurs sont interconnectés pour former un \emph{réseau de files d'attentes}.
+
+
+
+
+Nous allons évaluer le régime permanent du système, car en effet le régime transitoire dans lequel les métriques observées évolue ($\to$ non stables) n'est pas représentatif de l'utilisation.
+
+
+Les paramètres de performances les plus utilisés sont :
+\begin{itemize}
+\item Débit/fréquence d'arrivée et de sortie
+\item Nombre moyen de clients dans les système
+\item Condition de stabilité (elle n'a de sens qu'en régime permanent), c'est-à-dire quand le débit d'entrée est égal au débit de sortie.
+\end{itemize}
+
+En fonction de la topologie, les réseaux de files d'attentes peuvent être ouvert ou fermés selon la présence ou non d'une sortie permettant de quitter le système.
+\medskip 
+
+Les réseaux de Jackson sont des réseaux ouvert avec une seul classe de client, des arrivées Possonniènnes, un seul serveur par file d'attente, des files de capacité infinie, un choix FIFO et un routage probabiliste.
+\medskip
+
+Un réseau de file d'attente fermé a un nombre fixe de clients qui circulent à travers les différentes files et serveur, il n'y a donc pas de flux d'arrivé ni de sortie.
+
+Avant la modélisation, on suppose que le nombre de client sortant est équivalent à celui des clients sortant à long terme. De plus, on suppose qu'à un instant $t$ il y a au plus une arrivée \emph{ou} un sortie. Il n'y a donc pas d'arrivée ni de départ multiple, ni de mouvement simultané entre les files.
+
+Dans la suite du cours, on va utiliser les notations suivantes :
+\begin{itemize}
+\item $\lambda$ taux d'arrivée moyen
+\item $s$ temps de service moyen
+\item $\mu = 1/s$ taux d'arrivé moyen
+\item $rho = \lambda/\mu$ l'intensité du trafic (saturé si $>1$)
+\item $r$ le temps de réponse moyen
+\item $w$ le temps d'attente moyen
+\item $q$ le nombre de client dans la file
+\item $n$ le nombre de client dans le système au total
+\item $U$ la fraction d'utilisation du système
+\item $a$ et $d$ le nombre d'arrivées et de départ pendant une période $T$
+\end{itemize}
+
+Pour mesurer le temps d'arrivé, on calcule $a/T$.
+
+L'utilisation du serveur est donnée par $U = \dfrac{b}{d}\cdot \dfrac{d}{T}$ avec $\dfrac{b}{d}$ le temps moyen pour servir un client et $\dfrac{d}{T}$ le taux de départ des clients.
+
+
+\begin{thm}
+Peut s'appliquer à un unique buffer, un buffer et un serveur ou au serveur de la file
+\[n  = \lambda . s\]
+\end{thm}
+
+L'analyse stochastique permet de voir le système comme autre chose qu'une boîte noire.
+
+On utilise la notation de Kendall :
+$A/S/C/B/N/D$ avec 
+\begin{itemize}
+\item $A$ la distribution du processus d'arrivé
+\item $S$ la distribution du service
+\item $C$ le nombre de serveurs par file
+\item $B = \infty$ nombre de clients
+\item $N = \infty$ la capacité du serveur
+\item $D$ la stratégie de placement
+\end{itemize}
+
+On utilise principalement les $M/M/1$ et $M/M/C$.
+
+\paragraph{Cas M/M/1}
+Arrivée poissonnienne de taux $\lambda$ et traitement exponentiel de taux $\mu$, pile FIFO et capacité infinie. Le débi est $\lambda$ et $ \rho = \lambda/\mu$.
+
+Le temps passé dans la file d'attente est 
+\[w = \dfrac{\rho}{\mu(1-\rho)}\]
+Et le nombre moyen de client dans la file est
+\[q = w \times \lambda = \dfrac{\rho^2}{1-\rho}\]
+
+\paragraph{Cas M/M/C}
+Comme le cas précédent mais avec $C$ serveurs de même type. La condition de stabilité devient alors $\lambda< C\cdot \mu$; D'autres formules sont disponibles dans les slides.
+
 
 \end{document}

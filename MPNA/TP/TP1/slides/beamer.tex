@@ -81,23 +81,47 @@ int main(){
 \end{lstlisting}
 \end{frame}
 
-\begin{frame}{Complexity}
+\begin{frame}{Complexity and tests}
 \begin{itemize}
 \item {Time:} The matrix-vector product dominates $\Rightarrow$ $O(n^2)$
 \bigskip
 \item {Space:} The storage of $A$ dominates $\Rightarrow$ $O(n^2)$
+\end{itemize}
+\bigskip
+The multiplications have been tested on
+\begin{itemize}
+\item $\begin{pmatrix}
+1 \\
+1
+\end{pmatrix}^2 = 2
+$
+\item $
+\begin{pmatrix}
+1 & 0\\
+0 & 1
+\end{pmatrix}
+\cdot
+\begin{pmatrix}
+1\\
+1
+\end{pmatrix} = 
+\begin{pmatrix}
+1\\
+1
+\end{pmatrix}
+$
 \end{itemize}
 \end{frame}
 
 \section{Results}
 \begin{frame}{i5-2520M}
 \begin{columns}
-\begin{column}{0.3\linewidth}
+\begin{column}{0.25\linewidth}
 \begin{itemize}
 \item Sandy Bridge
 \end{itemize}
 \end{column}
-\begin{column}{0.3\linewidth}
+\begin{column}{0.25\linewidth}
 \begin{itemize}
 \item 3.5 GHz
 \end{itemize}
@@ -107,10 +131,21 @@ int main(){
 \item Hyperthreaded Dual-core
 \end{itemize}
 \end{column}
+\begin{column}{0.25\linewidth}
+\begin{itemize}
+\item $M=80$
+\end{itemize}
+\end{column}
 \end{columns}
 \begin{figure}
-\includegraphics[width=0.82\linewidth]{lenovo-i5-2emeGen.png}
-\caption{Performance evaluation on the i5-2520M}
+\begin{columns}
+\begin{column}{0.8\linewidth}
+\includegraphics[width=\linewidth]{lenovo-i5-2emeGen.png}
+\end{column}
+\begin{column}{0.2\linewidth}
+\caption{Performance evaluation on the i5-2520M: execution time = $f$(matrix size) and quadratic model $time=f(size)=A.size^2 + B.size + C$}
+\end{column}
+\end{columns}
 \end{figure}
 \end{frame}
 

@@ -183,6 +183,43 @@ La fonction \texttt{spread} fait l'inverse de \texttt{gather}. \texttt{separate}
 
 Les données peuvent être groupée avec \texttt{group\_by}, cette opération est \emph{silencieuse}, c'est à dire qu'on ne voit pas les changements sur les tableau de données.
 
+\section{Data mining et apprentissage}
+Le data minng ou fouille de donnée est l recherche de \emph{pépites d'information} pour aider à la prédiction. On utilise des techniques statistiques d'apprentissage machine pour des données de grandes dimension (big data).
+
+
+En biologie, on peut utiliser des modèles de compétition proies-prédateur (l'avantage est de ne pas utiliser de variables aléatoires).
+
+Pour rechercher des gênes, on peut utiliser des outils de machine learning pour détecter des probabilités d'occurrence de maladie ou de caractères phénotypiques.
+\bigskip
+
+Un modèle statistique classique est le modèle linéaire :
+\[Y_i = \beta_0 + \sum_{j=1}^p \beta_jX_i^{(j)}+ \epsilon\]
+Avec $\epsilon$ les résidus, qui doivent être de moyenne nul si la régression est valide.
+
+Les méthodes d'apprentissage se décomposent en supervisé (on connait à l'avance des étiquettes) et non supervisé (on recherche des classes).
+
+On cherche un modèle \emph{parcimonieux} : il faut éviter les modèles trop complexes (sur apprentissage) ou trop simple (sous apprentissage).
+
+Pour mesurer la validité intrinsèque d'un modèle, on cherche a minimiser les faux positif et les faux négatifs. La sensibilité d'un modèle mesure sa capacité à donner un résultat positif lorsqu'une hypothèse est vérifiée : $\dfrac{VP}{VP+FN}$. L'inverse est appelée \emph{spécificité}: $\dfrac{VN}{VN+FP}$ (VN = vrai négatif, FP = faux positif).
+
+L'apprentissage est constitué des plusieurs étapes :
+\begin{enumerate}
+\item Extraction des données avec ou sans échantillonnage (sondage)
+\item Exploration de données
+\item Partition aléatoire (apprentissage, validation, test)
+\item Pour chacune des méthodes considérées, il faut estimer le modèle pour une valeur donnée d'un paramètre puis réitérer pour tous les paramètres
+\item Choisir la méthode en fonction de l'interprétabilité, de la robustesse et de ses capacités de prédiction.
+\item Ré-estimer le modèle sur l'ensemble des données
+\item Exploiter le modèle sur la base de donnée entière
+\end{enumerate}
+
+En TD, nous avons utilisé le jeu de donnée Prostate du package lasso2.
+
+\section{Métagénomique}
+On a découvert la métagénomique en 2005, mais il a fallut attendre 2009 pour avoir une application : le microbiote.
+
+L'assemblage consiste à reconstruire l'information génétique à partir de petites chaines d'ADN issues de l'amplification. Le score N50 représente est le minorant pour estimer la taille minimale des contig nécessaires pour couvrir 50\% du génome. On peut vérifier l'assemblage obtenu par un dot-plot.
+
 \subsection{ggplot2}
 S'utilise de la manière suivante :\\
 \texttt{ggplot(data = DATA + GEOM\_FUNCTION(mapping = aes(mapping)}
